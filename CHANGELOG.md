@@ -6,6 +6,7 @@ Perubahan SingAlong dicatat di file ini. Versi **0.x** menandai tahap pengembang
 
 ### Ditambahkan
 
+- Build installer Windows melalui `npm run build:installer`, versi dari `build/config.json`, output per versi, dan pencegahan build duplikat.
 - Opsi Background blur melalui efek Acrylic pada Windows 11 build 22621 atau lebih baru.
 - Tombol di samping re-sync untuk menyembunyikan dan menampilkan kembali kontrol playback.
 - Tombol sinkronisasi ulang di kiri atas overlay untuk memulai ulang pembaca Spotify, jam playback, dan pencarian lirik.

@@ -1,121 +1,161 @@
 # SingAlong
 
-SingAlong menampilkan lirik lagu Spotify Desktop melalui overlay transparan di Windows. Baris aktif dan baris berikutnya mengikuti posisi lagu, sehingga kamu bisa bernyanyi sambil bermain game atau memakai aplikasi lain.
+SingAlong displays synchronized Spotify Desktop lyrics in a customizable Windows overlay. Follow the current line and preview the next while gaming or using other apps.
 
-Versi saat ini **0.1.0**, tahap pengembangan awal. Sinkronisasi playback dan perpindahan fokus fullscreen masih dalam penyempurnaan.
+The current development version is **0.1.0**. Playback synchronization and fullscreen focus handling are still being refined.
 
-## Menjalankan
+## Getting started
 
-Siapkan Windows 10 versi 1809 atau lebih baru, Spotify Desktop, Node.js 22.12 atau lebih baru, dan npm. Koneksi internet diperlukan untuk mengunduh dependensi dan mencari lirik di LRCLIB.
+Use Windows 10 version 1809 or later, Spotify Desktop, Node.js 22.12 or later, and npm. Internet access is required to download dependencies and fetch lyrics.
 
-Jalankan dari folder proyek menggunakan PowerShell.
+Run these commands from the project folder in PowerShell.
 
 ```powershell
 npm.cmd install
 npm.cmd start
 ```
 
-Untuk instalasi ulang yang mengikuti versi dependensi dalam lockfile, gunakan `npm.cmd ci`.
+Use `npm.cmd ci` for a clean installation following the dependency lockfile.
 
-Putar lagu di Spotify Desktop. SingAlong langsung membuka overlay dan mencari lirik bertimestamp berdasarkan judul serta artis. Jika lirik sinkron tidak ditemukan, overlay menampilkan “No Lyrics Available for this song”.
+Start a song in Spotify Desktop. SingAlong opens the overlay immediately and searches LRCLIB for synchronized lyrics. If no matching synchronized lyrics are available, it displays “No Lyrics Available for this song”.
 
-## Fitur
+## Features
 
-- Dua baris lirik dengan animasi fade dan geser singkat saat teks berubah.
-- Slider posisi lagu dengan waktu berjalan dan durasi.
-- Tombol lagu sebelumnya, play/pause, dan lagu berikutnya.
-- Overlay yang bisa digeser, klik-tembus, serta efek redup saat hover.
-- Pengaturan warna dan opacity background serta teks lirik secara terpisah.
-- Mode Game otomatis saat jendela fullscreen mendapat fokus.
-- Ikon system tray dan konfirmasi sebelum menutup aplikasi lewat tombol close.
+- Current and next lyric lines with a short fade and slide animation.
+- Timeline slider with elapsed time and duration.
+- Previous track, play/pause, and next track controls.
+- Movable overlay, click-through interaction, and reduced opacity on hover.
+- Independent background and lyric text colors and opacity.
+- Optional Windows Acrylic background blur.
+- Automatic Game Mode when a fullscreen window receives focus.
+- Re-sync button and a toggle to hide playback controls.
+- System tray menu, custom settings toolbar, and exit confirmation.
 
-## Menggunakan overlay
+## Using the overlay
 
-Klik **☰** untuk membuka pengaturan. Di bagian **Background**, atur warna dan opacity panel. Di bagian **Teks**, atur warna dan opacity lirik. Pengaturan diterapkan langsung dan kembali ke default saat aplikasi dijalankan ulang.
+Click **☰** to open settings. **Background** controls panel color, opacity, and blur. **Teks** controls lyric color and opacity. Changes apply immediately. Settings and position reset when the app restarts.
 
-Tekan **Ctrl + Alt + L** untuk masuk atau keluar dari mode geser. Saat mode geser aktif, seret area lirik untuk memindahkan overlay. Jika posisinya sulit ditemukan, klik kanan ikon SingAlong di system tray lalu pilih **Pulihkan posisi overlay**.
+Press **Ctrl + Alt + L** to toggle edit mode, then drag the lyric area to reposition the overlay. To recover its position, right-click the SingAlong tray icon and select **Pulihkan posisi overlay**.
 
-| Kontrol | Fungsi |
+| Control | Action |
 | --- | --- |
-| ☰ | Membuka pengaturan |
-| ↻ | Memulai ulang pembacaan Spotify, waktu playback, dan pencarian lirik |
-| ⏮ / ⏭ | Meminta Spotify berpindah ke lagu sebelumnya atau berikutnya |
-| ▶ / ⏸ | Memutar kembali atau menjeda lagu |
-| Slider waktu | Meminta Spotify berpindah posisi saat slider dilepas |
-| Ctrl + Alt + L | Mengubah mode geser dan memunculkan kembali overlay |
-| Ctrl + Alt + Q | Keluar langsung dari SingAlong |
+| ☰ | Open settings |
+| ↻ | Restart Spotify detection, playback clock, and lyric lookup |
+| ⌄ / ⌃ beside re-sync | Hide or show playback controls |
+| ⏮ / ⏭ | Request the previous or next Spotify track |
+| ▶ / ⏸ | Resume or pause Spotify |
+| Timeline slider | Request a new playback position when released |
+| Ctrl + Alt + L | Toggle edit mode and reveal the overlay |
+| Ctrl + Alt + Q | Exit SingAlong immediately |
 
-Tombol dan slider mengikuti kemampuan kontrol yang dilaporkan Spotify. Saat Mode Game aktif, kontrol playback dan penggeseran overlay dikunci agar klik diteruskan ke game. Hover tetap dapat meredupkan overlay.
+Playback buttons and seeking depend on the controls Spotify exposes to Windows. Game Mode locks playback interaction and dragging so clicks pass through to the game. Hover fading remains available.
 
-Mode Game berakhir saat fokus berpindah ke jendela biasa. Deteksi fullscreen juga dapat aktif pada aplikasi fullscreen lainnya.
+Game Mode ends when focus returns to a regular window. Other fullscreen apps can also trigger it.
 
-## Menutup pengaturan dan aplikasi
+## Closing settings and exiting
 
-Tombol **−** menutup jendela pengaturan. Overlay tetap aktif dan SingAlong tetap memiliki indikator di taskbar.
+The **−** button closes settings while the overlay remains active and SingAlong stays visible in the taskbar.
 
-Tombol **×** di pengaturan atau **Close window** pada SingAlong di taskbar menampilkan “Close SingAlong?”. Pilih **Yes** untuk keluar sepenuhnya atau **No** untuk membatalkan.
+The **×** settings button or the taskbar's **Close window** command shows “Close SingAlong?”. Choose **Yes** to exit the entire app or **No** to cancel.
 
-Untuk langsung keluar, gunakan **Keluar dari SingAlong** di menu tray atau **Ctrl + Alt + Q**. Saat keluar, SingAlong menghentikan pembaca sesi media Windows.
+To exit immediately, choose **Keluar dari SingAlong** in the tray menu or press **Ctrl + Alt + Q**. Exiting stops the Windows media helper.
 
-## Cara kerja
+## Building a Windows installer
 
-SingAlong membaca sesi Spotify melalui Windows Media Control, mencari lirik bertimestamp di [LRCLIB](https://lrclib.net/docs), lalu memilih baris berdasarkan posisi playback. Jam lokal meneruskan waktu di antara pembaruan Windows dan dikoreksi saat posisi atau status berubah.
+Set the installer version in `build/config.json`.
 
-Perintah seek, play, pause, previous, dan next dikirim melalui kontrol media Windows. Aplikasi menggunakan Electron serta helper Windows PowerShell untuk membaca dan mengontrol sesi tersebut.
+```json
+{
+  "version": "0.1.0"
+}
+```
 
-## Batasan saat ini
+Then run on Windows.
 
-- Sumber playback saat ini khusus Spotify Desktop.
-- Ketersediaan dan ketepatan timestamp bergantung pada data LRCLIB serta kecocokan versi lagu.
-- Perubahan posisi dan status dapat terlambat mengikuti pembaruan sesi media Windows.
-- Perilaku overlay saat Alt+Tab dan fullscreen masih perlu pengujian pada berbagai game. Level always-on-top dan pemulihan render sudah diterapkan.
-- Kontrol playback langsung masih perlu pengujian lebih lanjut pada sesi Spotify nyata.
-- Hotkey dapat gagal didaftarkan jika kombinasi yang sama digunakan aplikasi lain.
-- Pengaturan dan posisi overlay belum disimpan antar sesi.
-- Installer distribusi belum tersedia. Jalankan melalui npm.
+```powershell
+npm.cmd run build:installer
+```
 
-## Pengembangan
+The x64 NSIS installer is written to:
+
+```text
+build/app/0.1.0/SingAlong-0.1.0.exe
+```
+
+Change the configured version for each new build. Versions must use canonical `major.minor.patch` format, such as `0.1.0` or `0.2.1`. An existing version directory blocks another build, including concurrent builds and retries after a failed build. After a failure, inspect `build-status.json` in that directory. To intentionally retry the same version, remove that failed output directory first.
+
+The configured version is applied to the packaged app. The source package.json and lockfile keep their development version. Generated output is ignored by Git.
+
+The installer supports per-user installation and a selectable destination. Build tools may require internet access on the first run. The current build produces an unsigned installer.
+
+## How it works
+
+SingAlong reads Spotify's Windows Media Control session and searches [LRCLIB](https://lrclib.net/docs) using track metadata. A local playback clock advances between Windows snapshots and reconciles playback state and timeline updates.
+
+Seek, play, pause, previous, and next requests go through Windows media controls. Electron manages the UI, and Windows PowerShell helpers read and control the session and detect foreground fullscreen windows.
+
+## Current limitations
+
+- Playback detection currently targets Spotify Desktop.
+- Lyric availability and timing depend on LRCLIB and the matching recording.
+- Windows media updates can delay playback state and timeline changes.
+- Fullscreen and Alt+Tab behavior still needs testing across different games.
+- Live playback controls and synchronization need further testing with Spotify.
+- Global shortcuts may be unavailable if another app uses the same combination.
+- Settings and overlay position are stored for the current session only.
+- Acrylic blur requires Windows 11 build 22621 or later. Its intensity is managed by Windows.
+
+## Development
 
 ```powershell
 npm.cmd run check
 ```
 
-Perintah ini memeriksa sintaks JavaScript. Verifikasi interaksi Spotify, fullscreen, dan tampilan dilakukan terpisah di Windows.
+This checks JavaScript syntax. Spotify interaction, fullscreen behavior, and visual layout are verified separately on Windows.
 
-| File | Peran |
+| File | Purpose |
 | --- | --- |
-| `main.js` | Jendela Electron, state pengaturan, hotkey, tray, dan IPC |
-| `preload.js` | Pembaruan tampilan dan interaksi overlay |
-| `overlay.html`, `overlay.css` | Tampilan overlay |
-| `controls.html`, `controls.css`, `controls-preload.js` | Pengaturan dengan toolbar custom |
-| `playback.js` | Pembacaan snapshot media, permintaan lirik, dan kontrol playback |
-| `playback-clock.js` | Perhitungan posisi playback lokal |
-| `lyrics.js` | Pencarian LRCLIB dan parsing LRC |
-| `spotify.ps1` | Akses sesi Spotify melalui Windows Media Control |
-| `fullscreen.ps1` | Deteksi jendela fullscreen yang mendapat fokus |
+| main.js | Electron windows, settings state, shortcuts, tray, and IPC |
+| preload.js | Overlay updates and interaction |
+| overlay.html, overlay.css | Overlay layout and styling |
+| controls.html, controls.css, controls-preload.js | Settings and custom toolbar |
+| playback.js | Media snapshots, lyric requests, and playback controls |
+| playback-clock.js | Local playback position |
+| lyrics.js | LRCLIB search and LRC parsing |
+| spotify.ps1 | Spotify session access through Windows Media Control |
+| fullscreen.ps1 | Foreground fullscreen detection |
+| build/config.json | Installer version |
+| build/installer.js | Version validation, output reservation, and installer build |
 
-Font lirik lokal dimuat dari `font/Spotify-Font.ttf`. Metadata file yang disediakan menyebut Gotham Bold.
+The local lyric font is loaded from `font/Spotify-Font.ttf`. The supplied file identifies itself as Gotham Bold.
 
 ## Changelog
 
 ### Unreleased
 
-- Background blur melalui efek Acrylic pada Windows 11 build 22621 atau lebih baru.
-- Tombol re-sync untuk membaca ulang Spotify, mereset jam playback, dan mencari ulang lirik.
-- Tombol di samping re-sync untuk menyembunyikan atau menampilkan kontrol playback.
-- Pemeriksaan konsistensi metadata dan timestamp saat lagu diganti cepat.
-- Penundaan pencarian serta validasi respons lirik agar hasil lagu sebelumnya diabaikan.
-- Pemilihan kandidat lirik dengan selisih durasi maksimal tiga detik.
+- Configurable Windows installer builds with per-version output and duplicate build protection.
+- Acrylic background blur on Windows 11 build 22621 or later.
+- Re-sync button to restart Spotify detection, playback timing, and lyric lookup.
+- Playback control visibility toggle beside re-sync.
+- Metadata and timeline consistency checks during rapid track changes.
+- Debounced lyric requests and validation to discard outdated responses.
+- Lyric candidates restricted to a maximum duration difference of three seconds.
 
-### 0.1.0 — 18 November 2026
+### 0.1.0 — November 18, 2026
 
-- Overlay lirik Spotify dengan baris aktif, baris berikutnya, font lokal, dan animasi pergantian teks.
-- Slider timestamp serta kontrol previous, play/pause, dan next.
-- Sinkronisasi pause, resume, seek, dan pergantian lagu melalui jam playback lokal.
-- Mode Game otomatis, klik-tembus, efek hover, serta pemulihan overlay saat perpindahan fokus.
-- Pengaturan warna dan opacity terpisah untuk background serta teks.
-- Toolbar custom, system tray, hotkey, dan konfirmasi keluar.
+- Spotify lyric overlay with current and next lines, a local font, and lyric transitions.
+- Timeline slider and previous, play/pause, and next controls.
+- Local playback clock for pause, resume, seeking, and track changes.
+- Automatic Game Mode, click-through, hover fading, and focus recovery.
+- Independent background and text color and opacity settings.
+- Custom toolbar, tray integration, shortcuts, and exit confirmation.
 
-Sinkronisasi langsung, kontrol playback, dan perilaku Alt+Tab fullscreen masih memerlukan pengujian lebih lanjut.
+Live synchronization, playback controls, and fullscreen Alt+Tab behavior still need further testing.
 
-Riwayat lengkap tersedia di [CHANGELOG.md](CHANGELOG.md).
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
+
+## Downloads
+
+[Download SingAlong v0.1.0 for Windows x64](https://github.com/Andiilul/SingAlong/releases/download/v0.1.0/SingAlong-0.1.0.exe)
+
+Browse [all releases](https://github.com/Andiilul/SingAlong/releases) for release notes and other versions.

@@ -6,7 +6,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.js && node --check preload.js && node --check controls-preload.js && node --check playback.js && node --check playback-clock.js && node --check lyrics.js"
+    "build:installer": "node build/installer.js",
+    "check": "node --check main.js && node --check preload.js && node --check controls-preload.js && node --check playback.js && node --check playback-clock.js && node --check lyrics.js && node --check build/installer.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,8 @@
   "type": "commonjs",
   "private": true,
   "devDependencies": {
-    "electron": "^45.3.3"
+    "electron": "^45.3.3",
+    "electron-builder": "^26.18.0",
+    "semver": "^7.8.6"
   }
 }
