@@ -2,7 +2,7 @@
 
 SingAlong displays synchronized Spotify Desktop lyrics in a customizable Windows overlay. Follow the current line and preview the next while gaming or using other apps.
 
-The current development version is **0.1.0**. Playback synchronization and fullscreen focus handling are still being refined.
+The current development version is **0.2.0**. Playback synchronization and fullscreen focus handling are still being refined.
 
 ## Getting started
 
@@ -30,10 +30,13 @@ Start a song in Spotify Desktop. SingAlong opens the overlay immediately and sea
 - Automatic Game Mode when a fullscreen window receives focus.
 - Re-sync button and a toggle to hide playback controls.
 - System tray menu, custom settings toolbar, and exit confirmation.
+- English and Indonesian interface languages, switchable in settings.
 
 ## Using the overlay
 
 Click **☰** to open settings. **Background** controls panel color, opacity, and blur. **Teks** controls lyric color and opacity. Changes apply immediately. Settings and position reset when the app restarts.
+
+Choose **English** or **Bahasa Indonesia** using the language selector. The selection is applied to the interface, tray menu, and exit dialog immediately and remembered between sessions. Song metadata and lyric content retain their original language.
 
 Press **Ctrl + Alt + L** to toggle edit mode, then drag the lyric area to reposition the overlay. To recover its position, right-click the SingAlong tray icon and select **Pulihkan posisi overlay**.
 
@@ -66,7 +69,7 @@ Set the installer version in `build/config.json`.
 
 ```json
 {
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
 ```
 
@@ -79,7 +82,7 @@ npm.cmd run build:installer
 The x64 NSIS installer is written to:
 
 ```text
-build/app/0.1.0/SingAlong-0.1.0.exe
+build/app/0.2.0/SingAlong-0.2.0.exe
 ```
 
 Change the configured version for each new build. Versions must use canonical `major.minor.patch` format, such as `0.1.0` or `0.2.1`. An existing version directory blocks another build, including concurrent builds and retries after a failed build. After a failure, inspect `build-status.json` in that directory. To intentionally retry the same version, remove that failed output directory first.
@@ -133,6 +136,10 @@ The local lyric font is loaded from `font/Spotify-Font.ttf`. The supplied file i
 
 ### Unreleased
 
+### 0.2.0 — November 18, 2026
+
+- English and Indonesian localization with a saved language preference.
+- Electron runtime locales limited to English and Indonesian for future installers.
 - Configurable Windows installer builds with per-version output and duplicate build protection.
 - Acrylic background blur on Windows 11 build 22621 or later.
 - Re-sync button to restart Spotify detection, playback timing, and lyric lookup.
@@ -156,6 +163,8 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Downloads
 
-[Download SingAlong v0.1.0 for Windows x64](https://github.com/Andiilul/SingAlong/releases/download/v0.1.0/SingAlong-0.1.0.exe)
+| No. | Release | Link |
+| --- | --- | --- |
+| 1 | v0.1.0 · Windows x64 | [Download installer](https://github.com/Andiilul/SingAlong/releases/download/v0.1.0/SingAlong-0.1.0.exe) |
 
 Browse [all releases](https://github.com/Andiilul/SingAlong/releases) for release notes and other versions.

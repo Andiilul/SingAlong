@@ -9,12 +9,19 @@ let canSeek = false;
 let playbackControls = {};
 let playbackPlaying = false;
 let controlPending = false;
+let translations = {};
+let messageKey = '';
+const t = key => translations[key] ?? key;
+function showMessage(key) {
+  messageKey = key;
+  document.querySelector('#seek-message').textContent = t(key);
+}
 
 function updatePlaybackButtons() {
   const play = document.querySelector('#play-pause');
   const action = playbackPlaying ? 'pause' : 'play';
   play.textContent = playbackPlaying ? '⏸' : '▶';
-  play.title = playbackPlaying ? 'Jeda' : 'Putar';
+  play.title = t(playbackPlaying ? 'pause' : 'play');
   play.setAttribute('aria-label', play.title);
   play.disabled = wasInGameMode || controlPending || !playbackControls[action];
   document.querySelector('#previous-track').disabled = wasInGameMode || controlPending || !playbackControls.previous;
@@ -53,10 +60,10 @@ window.addEventListener('DOMContentLoaded', () => {
       const restarted = await ipcRenderer.invoke('resync-spotify');
       if (restarted) {
         scrubbing = false;
-        document.querySelector('#seek-message').textContent = 'Sinkronisasi ulang dimulai.';
+        showMessage('resyncStarted');
       }
     } catch {
-      document.querySelector('#seek-message').textContent = 'Gagal memulai sinkronisasi ulang.';
+      showMessage('resyncError');
     } finally {
       setTimeout(() => { resync.disabled = wasInGameMode; }, 2000);
     }
@@ -71,9 +78,9 @@ window.addEventListener('DOMContentLoaded', () => {
       try {
         const command = action === 'toggle' ? (playbackPlaying ? 'pause' : 'play') : action;
         const result = await ipcRenderer.invoke('control-spotify', command, currentTrackKey);
-        document.querySelector('#seek-message').textContent = result.message;
+        showMessage(result.messageKey ?? '');
       } catch {
-        document.querySelector('#seek-message').textContent = 'Gagal mengontrol Spotify.';
+        showMessage('controlError');
       } finally {
         controlPending = false;
         updatePlaybackButtons();
@@ -86,14 +93,14 @@ window.addEventListener('DOMContentLoaded', () => {
   toggleController.addEventListener('mouseleave', () => ipcRenderer.send('overlay-menu-hover', false));
   toggleController.addEventListener('click', () => {
     const hidden = document.body.classList.toggle('controller-hidden');
-    const label = hidden ? 'Tampilkan kontrol playback' : 'Sembunyikan kontrol playback';
+    const label = t(hidden ? 'showControls' : 'hideControls');
     toggleController.textContent = hidden ? '⌃' : '⌄';
     toggleController.title = label;
     toggleController.setAttribute('aria-label', label);
     toggleController.setAttribute('aria-expanded', String(!hidden));
     if (hidden) {
       scrubbing = false;
-      document.querySelector('#seek-message').textContent = '';
+      showMessage('');
     }
   });
   timeline.addEventListener('mouseenter', () => ipcRenderer.send('overlay-menu-hover', true));
@@ -112,12 +119,12 @@ window.addEventListener('DOMContentLoaded', () => {
     scrubbing = false;
     seekPending = true;
     slider.disabled = true;
-    document.querySelector('#seek-message').textContent = 'Mengubah posisi…';
+    showMessage('seeking');
     try {
       const result = await ipcRenderer.invoke('seek-spotify', position, key);
-      document.querySelector('#seek-message').textContent = result.message;
+      showMessage(result.messageKey ?? '');
     } catch {
-      document.querySelector('#seek-message').textContent = 'Gagal mengubah posisi Spotify.';
+      showMessage('seekError');
     } finally {
       seekPending = false;
       slider.disabled = !canSeek || wasInGameMode;
@@ -134,7 +141,19 @@ ipcRenderer.on('lyrics-hover', (_event, hovered) => {
   document.body.classList.toggle('lyrics-hovered', hovered);
 });
 
-ipcRenderer.on('overlay-state', (_event, { editing, gameMode, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor }) => {
+ipcRenderer.on('overlay-state', (_event, { editing, gameMode, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor, language, translations: messages }) => {
+  translations = messages;
+  document.documentElement.lang = language;
+  document.querySelector('.drag-hint').textContent = t('dragHint');
+  document.querySelector('#game-notice strong').textContent = t('gameMode');
+  document.querySelector('#game-notice p').textContent = t('gameSubtitle');
+  for (const [id, key] of [['settings-menu', 'openSettings'], ['resync', 'resync'], ['previous-track', 'previous'], ['next-track', 'next'], ['seek', 'position'], ['toggle-controller', document.body.classList.contains('controller-hidden') ? 'showControls' : 'hideControls']]) {
+    const element = document.getElementById(id);
+    element.title = t(key);
+    element.setAttribute('aria-label', t(key));
+  }
+  updatePlaybackButtons();
+  showMessage(messageKey);
   const alpha = (value) => Math.round(Math.max(0, Math.min(100, value)) / 100 * 255).toString(16).padStart(2, '0');
   const style = document.documentElement.style;
   style.setProperty('--overlay-background', `${backgroundColor}${alpha(backgroundOpacity)}`);
@@ -175,7 +194,7 @@ ipcRenderer.on('lyrics', (_event, { status, current, next, position = 0, duratio
   }
   if (trackKey !== currentTrackKey) {
     scrubbing = false;
-    document.querySelector('#seek-message').textContent = '';
+    showMessage('');
   }
   currentTrackKey = trackKey;
   canSeek = Boolean(seekable);

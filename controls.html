@@ -17,44 +17,46 @@
     </div>
   </header>
   <main>
-    <h1>Pengaturan overlay</h1>
+    <h1 data-i18n="settingsHeading">Pengaturan overlay</h1>
+    <label class="language-row"><span data-i18n="language">Bahasa</span><select id="language"><option value="en">English</option><option value="id">Bahasa Indonesia</option></select></label>
+    <p id="language-message" role="status"></p>
     <section class="settings">
       <label class="switch-row">
-        Redupkan saat kursor di atas lirik
+        <span data-i18n="reduceOpacityOnHover">Redupkan saat kursor di atas lirik</span>
         <input id="reduceOpacityOnHover" class="switch" type="checkbox" role="switch">
       </label>
       <label class="switch-row">
-        Teruskan klik ke aplikasi di belakang
+        <span data-i18n="allowClickThrough">Teruskan klik ke aplikasi di belakang</span>
         <input id="allowClickThrough" class="switch" type="checkbox" role="switch">
       </label>
     </section>
-    <h2>Background</h2>
+    <h2 data-i18n="background">Background</h2>
     <section class="settings">
-      <label class="switch-row">Warna <input id="backgroundColor" type="color" value="#0e0f16"></label>
+      <label class="switch-row"><span data-i18n="color">Warna</span> <input id="backgroundColor" type="color" value="#0e0f16"></label>
       <label class="switch-row" id="background-blur-row">
-        Background blur
+        <span data-i18n="backgroundBlur">Background blur</span>
         <input id="backgroundBlur" class="switch" type="checkbox" role="switch">
       </label>
       <div class="slider-row">
         <div class="slider-label">
-          <label for="backgroundOpacity">Opacity</label>
+          <label for="backgroundOpacity" data-i18n="opacity">Opacity</label>
           <output for="backgroundOpacity">78%</output>
         </div>
         <input id="backgroundOpacity" type="range" min="0" max="100" value="78">
       </div>
     </section>
-    <h2>Teks</h2>
+    <h2 data-i18n="text">Teks</h2>
     <section class="settings">
-      <label class="switch-row">Warna <input id="textColor" type="color" value="#ffffff"></label>
+      <label class="switch-row"><span data-i18n="color">Warna</span> <input id="textColor" type="color" value="#ffffff"></label>
       <div class="slider-row">
         <div class="slider-label">
-          <label for="textOpacity">Opacity</label>
+          <label for="textOpacity" data-i18n="opacity">Opacity</label>
           <output for="textOpacity">100%</output>
         </div>
         <input id="textOpacity" type="range" min="0" max="100" value="100">
       </div>
     </section>
-    <footer><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd> untuk geser overlay</footer>
+    <footer><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd> <span data-i18n="dragShortcut">untuk geser overlay</span></footer>
   </main>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "electron-singalong",
   "productName": "SingAlong",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Desktop lyrics overlay for Windows",
   "main": "main.js",
   "scripts": {

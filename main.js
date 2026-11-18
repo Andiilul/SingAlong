@@ -1,6 +1,8 @@
 const { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, screen, Tray } = require('electron');
 const path = require('node:path');
 const os = require('node:os');
+const fs = require('node:fs');
+const languages = { en: require('./locales/en.json'), id: require('./locales/id.json') };
 const { followSpotify } = require('./playback');
 
 const editShortcut = 'CommandOrControl+Alt+L';
@@ -16,6 +18,16 @@ const overlaySettings = {
 };
 
 app.whenReady().then(async () => {
+  const languageFile = path.join(app.getPath('userData'), 'language.json');
+  let language = app.getLocale().startsWith('id') ? 'id' : 'en';
+  try {
+    const saved = JSON.parse(fs.readFileSync(languageFile, 'utf8'));
+    if (Object.hasOwn(languages, saved.language)) language = saved.language;
+  } catch (error) {
+    if (error.code !== 'ENOENT') console.warn('Could not load language preference');
+  }
+  const t = (key) => languages[language][key] ?? languages.en[key] ?? key;
+  const localizationState = () => ({ language, translations: languages[language] });
   const backgroundBlurSupported = process.platform === 'win32' &&
     Number(os.release().split('.')[2]) >= 22621;
   const { x, y, width, height } = screen.getPrimaryDisplay().workArea;
@@ -143,7 +155,7 @@ app.whenReady().then(async () => {
     if (backgroundBlurSupported) {
       overlay.setBackgroundMaterial(overlaySettings.backgroundBlur ? 'acrylic' : 'none');
     }
-    overlay.webContents.send('overlay-state', { ...overlaySettings, editing, gameMode });
+    overlay.webContents.send('overlay-state', { ...overlaySettings, editing, gameMode, ...localizationState() });
     updateCursorHover();
   }
 
@@ -177,8 +189,8 @@ app.whenReady().then(async () => {
       const { response } = await dialog.showMessageBox(window, {
         type: 'question',
         title: 'SingAlong',
-        message: 'Close SingAlong?',
-        buttons: ['Yes', 'No'],
+        message: t('closeQuestion'),
+        buttons: [t('yes'), t('no')],
         defaultId: 1,
         cancelId: 1,
         noLink: true,
@@ -218,7 +230,7 @@ app.whenReady().then(async () => {
     window.on('closed', () => { controls = null; });
     try {
       await window.loadFile(path.join(__dirname, 'controls.html'));
-      window.webContents.send('settings-state', { ...overlaySettings, backgroundBlurSupported });
+      window.webContents.send('settings-state', { ...overlaySettings, backgroundBlurSupported, ...localizationState() });
       window.show();
     } catch (error) {
       if (!window.isDestroyed()) window.destroy();
@@ -257,19 +269,22 @@ app.whenReady().then(async () => {
   await overlay.loadFile(path.join(__dirname, 'overlay.html'));
   const tray = new Tray(path.join(__dirname, 'singalong-icon.png'));
   tray.setToolTip('SingAlong');
-  tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Buka pengaturan', click: openSettings },
-    { label: 'Pulihkan posisi overlay', click: () => {
-      const area = screen.getPrimaryDisplay().workArea;
-      const { width, height } = overlay.getBounds();
-      drag = null;
-      moveOverlay(area.x + Math.round((area.width - width) / 2),
-        area.y + area.height - height - 40, screen.getPrimaryDisplay());
-      revealOverlay();
-    } },
-    { type: 'separator' },
-    { label: 'Keluar dari SingAlong', click: () => app.quit() },
-  ]));
+  function updateTrayLanguage() {
+    tray.setContextMenu(Menu.buildFromTemplate([
+      { label: t('openSettings'), click: openSettings },
+      { label: t('recoverPosition'), click: () => {
+        const area = screen.getPrimaryDisplay().workArea;
+        const { width, height } = overlay.getBounds();
+        drag = null;
+        moveOverlay(area.x + Math.round((area.width - width) / 2),
+          area.y + area.height - height - 40, screen.getPrimaryDisplay());
+        revealOverlay();
+      } },
+      { type: 'separator' },
+      { label: t('exit'), click: () => app.quit() },
+    ]));
+  }
+  updateTrayLanguage();
   tray.on('click', openSettings);
   app.once('will-quit', () => tray.destroy());
 
@@ -289,9 +304,29 @@ app.whenReady().then(async () => {
   }
 
   applyOverlayState();
+  let lastPlaybackFrame;
   const publishPlayback = (frame) => {
-    if (!overlay.isDestroyed()) overlay.webContents.send('lyrics', frame);
+    lastPlaybackFrame = frame;
+    if (!overlay.isDestroyed()) overlay.webContents.send('lyrics', {
+      ...frame, current: frame.messageKey ? t(frame.messageKey) : frame.current,
+    });
   };
+  ipcMain.handle('set-language', (event, value) => {
+    if (event.sender !== controls?.webContents || !Object.hasOwn(languages, value)) return false;
+    try {
+      fs.mkdirSync(path.dirname(languageFile), { recursive: true });
+      fs.writeFileSync(languageFile + '.tmp', JSON.stringify({ language: value }));
+      fs.renameSync(languageFile + '.tmp', languageFile);
+    } catch {
+      return false;
+    }
+    language = value;
+    applyOverlayState();
+    if (lastPlaybackFrame) publishPlayback(lastPlaybackFrame);
+    controls.webContents.send('settings-state', { ...overlaySettings, backgroundBlurSupported, ...localizationState() });
+    updateTrayLanguage();
+    return true;
+  });
   let stopPlayback = followSpotify(publishPlayback, setGameMode);
   let lastResync = 0;
   ipcMain.handle('resync-spotify', (event) => {
@@ -303,12 +338,12 @@ app.whenReady().then(async () => {
     return true;
   });
   ipcMain.handle('seek-spotify', (event, position, trackKey) => {
-    if (event.sender !== overlay.webContents || gameMode) return { ok: false, message: 'Keluar dari Mode Game untuk mengubah posisi.' };
+    if (event.sender !== overlay.webContents || gameMode) return { ok: false, messageKey: 'gameControlLocked' };
     return stopPlayback.seek(position, trackKey);
   });
   ipcMain.handle('control-spotify', (event, action, trackKey) => {
-    if (event.sender !== overlay.webContents || gameMode) return { ok: false, message: 'Keluar dari Mode Game untuk mengontrol Spotify.' };
-    if (!['play', 'pause', 'next', 'previous'].includes(action)) return { ok: false, message: 'Perintah tidak tersedia.' };
+    if (event.sender !== overlay.webContents || gameMode) return { ok: false, messageKey: 'gameControlLocked' };
+    if (!['play', 'pause', 'next', 'previous'].includes(action)) return { ok: false, messageKey: 'unavailable' };
     return stopPlayback.control(action, trackKey);
   });
   app.once('before-quit', () => {
@@ -317,6 +352,7 @@ app.whenReady().then(async () => {
     ipcMain.removeHandler('seek-spotify');
     ipcMain.removeHandler('control-spotify');
     ipcMain.removeHandler('resync-spotify');
+    ipcMain.removeHandler('set-language');
   });
   overlay.showInactive();
   keepOverlayOnTop();

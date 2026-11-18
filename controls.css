@@ -105,6 +105,26 @@ h2 {
   background: #211d31;
 }
 
+.language-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+select {
+  padding: 6px 8px;
+  border: 1px solid #453c59;
+  border-radius: 6px;
+  background: #211d31;
+  color: inherit;
+  font: inherit;
+}
+
+#language-message:empty {
+  display: none;
+}
+
 .switch-row,
 .slider-label {
   display: flex;

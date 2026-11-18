@@ -14,7 +14,7 @@ function followSpotify(publish, onFullscreenChange) {
   let trackKey;
   let request;
   let lyrics = [];
-  let status = 'Putar lagu di Spotify Desktop';
+  let status = 'waiting';
   let lastFrame;
   const clock = new PlaybackClock();
   let seeking = null;
@@ -33,7 +33,7 @@ function followSpotify(publish, onFullscreenChange) {
       next: Boolean(track?.canNext), previous: Boolean(track?.canPrevious),
     };
     frame.status = track ? [track.title, track.artist].filter(Boolean).join(' · ') : 'Spotify Desktop';
-    if (!lyrics.length) frame.current = status;
+    if (!lyrics.length) frame.messageKey = status;
     const serialized = JSON.stringify(frame);
     if (serialized !== lastFrame) {
       lastFrame = serialized;
@@ -63,8 +63,8 @@ function followSpotify(publish, onFullscreenChange) {
     clearTimeout(lookupTimer);
     request?.abort();
     lyrics = [];
-    status = track ? 'Mencari lirik…' : 'Putar lagu di Spotify Desktop';
-    if (!snapshot.mediaAvailable) status = 'Gagal membaca sesi Spotify dari Windows';
+    status = track ? 'searching' : 'waiting';
+    if (!snapshot.mediaAvailable) status = 'mediaError';
     render();
     if (!track) return;
 
@@ -75,11 +75,11 @@ function followSpotify(publish, onFullscreenChange) {
         const result = await findLyrics(requestedTrack, signal);
         if (signal.aborted || generation !== version || trackKey !== key) return;
         lyrics = result.some((line) => line.lyric) ? result : [];
-        status = 'No Lyrics Available for this song';
+        status = 'noLyrics';
       } catch (error) {
         if (signal.aborted || generation !== version || trackKey !== key) return;
         console.error(error);
-        status = 'Gagal menghubungi LRCLIB';
+        status = 'lyricsError';
       }
       render();
     }, 650);
@@ -95,7 +95,7 @@ function followSpotify(publish, onFullscreenChange) {
     trackKey = null;
     clock.reset();
     lyrics = [];
-    status = 'Gagal membaca sesi Spotify dari Windows';
+    status = 'mediaError';
     render();
   }
   helper.on('error', readerFailed);
@@ -116,7 +116,7 @@ function followSpotify(publish, onFullscreenChange) {
   function runCommand(args, expectedKey, allowed) {
     return new Promise((resolve) => {
       if (!track || !allowed || expectedKey !== trackKey || seeking) {
-        resolve({ ok: false, message: 'Posisi belum bisa diubah. Coba lagi.' });
+        resolve({ ok: false, messageKey: 'unavailable' });
         return;
       }
       const child = spawn('powershell.exe', [
@@ -130,7 +130,7 @@ function followSpotify(publish, onFullscreenChange) {
         clearTimeout(timeout);
         if (seeking !== child) return;
         seeking = null;
-        resolve({ ok, message: ok ? '' : 'Spotify belum menjalankan perintah. Coba lagi.' });
+        resolve({ ok, messageKey: ok ? '' : 'commandError' });
       };
       child.once('error', () => finish(false));
       child.once('exit', (code) => finish(code === 0));

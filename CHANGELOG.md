@@ -4,8 +4,14 @@ Perubahan SingAlong dicatat di file ini. Versi **0.x** menandai tahap pengembang
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-18
+
+Localization English dan Indonesia.
+
 ### Ditambahkan
 
+- Pilihan bahasa English dan Indonesia untuk overlay, pengaturan, tray, dan dialog keluar. Pilihan bahasa disimpan antar sesi.
+- Paket bahasa runtime Electron untuk build berikutnya dibatasi ke English dan Indonesia.
 - Build installer Windows melalui `npm run build:installer`, versi dari `build/config.json`, output per versi, dan pencegahan build duplikat.
 - Opsi Background blur melalui efek Acrylic pada Windows 11 build 22621 atau lebih baru.
 - Tombol di samping re-sync untuk menyembunyikan dan menampilkan kembali kontrol playback.

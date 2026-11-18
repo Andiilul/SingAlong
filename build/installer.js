@@ -36,6 +36,7 @@ async function buildInstaller() {
         appId: 'com.andiilul.singalong',
         productName: 'SingAlong',
         extraMetadata: { version },
+        electronLanguages: ['en-US', 'id'],
         directories: { output: outputDir, buildResources: __dirname },
         // PowerShell helpers must be real files that Windows can execute.
         asar: false,
@@ -43,7 +44,7 @@ async function buildInstaller() {
           'main.js', 'preload.js', 'playback.js', 'playback-clock.js', 'lyrics.js',
           'overlay.html', 'overlay.css', 'controls.html', 'controls.css',
           'controls-preload.js', 'spotify.ps1', 'fullscreen.ps1',
-          'singalong-icon.png', 'font/**/*', 'package.json',
+          'singalong-icon.png', 'font/**/*', 'locales/*.json', 'package.json',
         ],
         electronDist: path.join(projectDir, 'node_modules', 'electron', 'dist'),
         win: {
