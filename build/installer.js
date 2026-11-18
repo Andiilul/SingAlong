@@ -41,7 +41,7 @@ async function buildInstaller() {
         // PowerShell helpers must be real files that Windows can execute.
         asar: false,
         files: [
-          'main.js', 'preload.js', 'playback.js', 'playback-clock.js', 'lyrics.js',
+          'main.js', 'preload.js', 'playback.js', 'playback-clock.js', 'lyrics.js', 'window-position.js',
           'overlay.html', 'overlay.css', 'controls.html', 'controls.css',
           'controls-preload.js', 'spotify.ps1', 'fullscreen.ps1',
           'singalong-icon.png', 'font/**/*', 'locales/*.json', 'package.json',
@@ -50,9 +50,12 @@ async function buildInstaller() {
         win: {
           target: 'nsis',
           artifactName: 'SingAlong-${version}.${ext}',
-          signAndEditExecutable: false,
+          icon: path.join(__dirname, 'icon.ico'),
+          signExecutable: false,
         },
         nsis: {
+          installerIcon: path.join(__dirname, 'icon.ico'),
+          uninstallerIcon: path.join(__dirname, 'icon.ico'),
           oneClick: false,
           perMachine: false,
           allowToChangeInstallationDirectory: true,

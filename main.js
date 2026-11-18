@@ -1,20 +1,22 @@
 const { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, screen, Tray } = require('electron');
 const path = require('node:path');
-const os = require('node:os');
 const fs = require('node:fs');
 const languages = { en: require('./locales/en.json'), id: require('./locales/id.json') };
 const { followSpotify } = require('./playback');
+const { moveWindow } = require('./window-position');
 
-const editShortcut = 'CommandOrControl+Alt+L';
 const quitShortcut = 'CommandOrControl+Alt+Q';
 const overlaySettings = {
   reduceOpacityOnHover: true,
   backgroundOpacity: 78,
-  backgroundBlur: false,
   textOpacity: 100,
   textColor: '#ffffff',
   backgroundColor: '#0e0f16',
   allowClickThrough: true,
+  horizontalAnchor: 'middle',
+  verticalAnchor: 'bottom',
+  horizontalPadding: 40,
+  verticalPadding: 40,
 };
 
 app.whenReady().then(async () => {
@@ -28,8 +30,6 @@ app.whenReady().then(async () => {
   }
   const t = (key) => languages[language][key] ?? languages.en[key] ?? key;
   const localizationState = () => ({ language, translations: languages[language] });
-  const backgroundBlurSupported = process.platform === 'win32' &&
-    Number(os.release().split('.')[2]) >= 22621;
   const { x, y, width, height } = screen.getPrimaryDisplay().workArea;
   const overlayWidth = Math.min(680, width);
   const overlayHeight = 242;
@@ -39,7 +39,10 @@ app.whenReady().then(async () => {
     width: overlayWidth,
     height: overlayHeight,
     frame: false,
+    thickFrame: false,
+    movable: false,
     transparent: true,
+    backgroundColor: '#00000000',
     alwaysOnTop: true,
     resizable: false,
     minimizable: false,
@@ -52,16 +55,15 @@ app.whenReady().then(async () => {
       backgroundThrottling: false,
     },
   });
+  overlay.on('will-resize', (event) => event.preventDefault());
 
   let controls = null;
   let quitting = false;
   let confirmingClose = false;
-  let editing = false;
   let gameMode = false;
   let overMenu = false;
   let lyricsBounds;
   let overLyrics = false;
-  let drag = null;
   const focusRecoveryTimers = new Set();
   let fullscreenEndedAt = 0;
 
@@ -74,7 +76,7 @@ app.whenReady().then(async () => {
       const timer = setTimeout(() => {
         focusRecoveryTimers.delete(timer);
         if (quitting || overlay.isDestroyed()) return;
-        if (fromFullscreen && delay === 600 && !confirmingClose && !controls?.isFocused()) {
+        if (fromFullscreen && delay === 600 && !confirmingClose && !controls?.isVisible()) {
           // Re-present the transparent HWND after the fullscreen swapchain releases the display.
           overlay.hide();
           overlay.showInactive();
@@ -92,47 +94,63 @@ app.whenReady().then(async () => {
     if (quitting || overlay.isDestroyed()) return;
     overlay.setAlwaysOnTop(true, 'screen-saver');
     if (!overlay.isVisible()) overlay.showInactive();
-    if (!confirmingClose && !controls?.isFocused()) overlay.moveTop();
+    if (confirmingClose) return;
+    if (controls?.isVisible()) {
+      controls.moveTop();
+    } else {
+      overlay.moveTop();
+    }
   }
 
-  function moveOverlay(x, y, display) {
-    const area = display.workArea;
+  function positionLimits() {
+    const area = screen.getPrimaryDisplay().bounds;
     const bounds = overlay.getBounds();
-    const boundedX = Math.max(area.x, Math.min(x, area.x + area.width - bounds.width));
-    const boundedY = Math.max(area.y, Math.min(y, area.y + area.height - bounds.height));
-    if (boundedX !== bounds.x || boundedY !== bounds.y) overlay.setPosition(boundedX, boundedY);
+    const panelWidth = lyricsBounds ? lyricsBounds.right - lyricsBounds.left : bounds.width;
+    const panelHeight = lyricsBounds ? lyricsBounds.bottom - lyricsBounds.top : bounds.height;
+    return {
+      horizontalPadding: Math.max(0, Math.floor(area.width - panelWidth)),
+      verticalPadding: Math.max(0, Math.floor(area.height - panelHeight)),
+    };
+  }
+
+  function applyPosition() {
+    const area = screen.getPrimaryDisplay().bounds;
+    const limits = positionLimits();
+    function offset(anchor, padding, space) {
+      if (anchor === 'middle') return Math.round(space / 2);
+      const inset = Math.min(padding, space);
+      return anchor === 'right' || anchor === 'bottom' ? space - inset : inset;
+    }
+    const bounds = overlay.getBounds();
+    const content = overlay.getContentBounds();
+    const panelX = (lyricsBounds?.left ?? 0) + content.x - bounds.x;
+    const panelY = (lyricsBounds?.top ?? 0) + content.y - bounds.y;
+    const x = area.x + offset(overlaySettings.horizontalAnchor, overlaySettings.horizontalPadding, limits.horizontalPadding) - panelX;
+    const y = area.y + offset(overlaySettings.verticalAnchor, overlaySettings.verticalPadding, limits.verticalPadding) - panelY;
+    if (x !== bounds.x || y !== bounds.y) moveWindow(overlay, x, y);
+  }
+
+  function settingsState() {
+    return { ...overlaySettings, positionLimits: positionLimits(), ...localizationState() };
   }
 
   function revealOverlay() {
-    const bounds = overlay.getBounds();
-    moveOverlay(bounds.x, bounds.y, screen.getDisplayMatching(bounds));
+    applyPosition();
+    if (controls && !controls.webContents.isLoading()) controls.webContents.send('settings-state', settingsState());
     keepOverlayOnTop();
   }
 
-  ipcMain.on('overlay-drag', (event, active) => {
-    if (event.sender !== overlay.webContents || !editing) return;
-    drag = active === true ? { cursor: screen.getCursorScreenPoint(), bounds: overlay.getBounds() } : null;
-  });
-  overlay.on('blur', () => { drag = null; });
-
-  function updateCursor() {
-    if (drag) {
-      const cursor = screen.getCursorScreenPoint();
-      const x = drag.bounds.x + cursor.x - drag.cursor.x;
-      const y = drag.bounds.y + cursor.y - drag.cursor.y;
-      moveOverlay(x, y, screen.getDisplayNearestPoint(cursor));
-      return;
-    }
-    updateCursorHover();
-  }
-
   ipcMain.on('lyrics-bounds', (event, bounds) => {
-    if (event.sender === overlay.webContents) lyricsBounds = bounds;
+    if (event.sender !== overlay.webContents ||
+        !bounds || !['left', 'top', 'right', 'bottom'].every(key => Number.isFinite(bounds[key]))) return;
+    lyricsBounds = bounds;
+    applyPosition();
+    if (controls && !controls.webContents.isLoading()) controls.webContents.send('settings-state', settingsState());
   });
 
   function updateCursorHover() {
     let hovered = false;
-    if (lyricsBounds && !editing && overlaySettings.reduceOpacityOnHover) {
+    if (lyricsBounds && overlaySettings.reduceOpacityOnHover) {
       const cursor = screen.getCursorScreenPoint();
       const origin = overlay.getContentBounds();
       const x = cursor.x - origin.x;
@@ -146,16 +164,13 @@ app.whenReady().then(async () => {
   }
 
   function applyMouseMode() {
-    const ignore = gameMode || (!editing && !overMenu && overlaySettings.allowClickThrough);
+    const ignore = gameMode || (!overMenu && overlaySettings.allowClickThrough);
     overlay.setIgnoreMouseEvents(ignore, { forward: true });
   }
 
   function applyOverlayState() {
     applyMouseMode();
-    if (backgroundBlurSupported) {
-      overlay.setBackgroundMaterial(overlaySettings.backgroundBlur ? 'acrylic' : 'none');
-    }
-    overlay.webContents.send('overlay-state', { ...overlaySettings, editing, gameMode, ...localizationState() });
+    overlay.webContents.send('overlay-state', { ...overlaySettings, gameMode, ...localizationState() });
     updateCursorHover();
   }
 
@@ -164,8 +179,6 @@ app.whenReady().then(async () => {
     if (!active) fullscreenEndedAt = Date.now();
     gameMode = active;
     if (active) {
-      editing = false;
-      drag = null;
       overMenu = false;
     }
     applyOverlayState();
@@ -211,6 +224,8 @@ app.whenReady().then(async () => {
     }
 
     const window = new BrowserWindow({
+      parent: overlay,
+      alwaysOnTop: true,
       width: 400,
       height: 640,
       useContentSize: true,
@@ -225,12 +240,13 @@ app.whenReady().then(async () => {
         preload: path.join(__dirname, 'controls-preload.js'),
       },
     });
+    window.setAlwaysOnTop(true, 'screen-saver');
     controls = window;
     window.on('close', (event) => void confirmExit(window, event));
     window.on('closed', () => { controls = null; });
     try {
       await window.loadFile(path.join(__dirname, 'controls.html'));
-      window.webContents.send('settings-state', { ...overlaySettings, backgroundBlurSupported, ...localizationState() });
+      window.webContents.send('settings-state', settingsState());
       window.show();
     } catch (error) {
       if (!window.isDestroyed()) window.destroy();
@@ -246,16 +262,21 @@ app.whenReady().then(async () => {
     if (event.sender !== controls?.webContents) return;
     if (['backgroundOpacity', 'textOpacity'].includes(name) && Number.isInteger(value) && value >= 0 && value <= 100) {
       overlaySettings[name] = value;
+    } else if ((name === 'horizontalAnchor' && ['left', 'middle', 'right'].includes(value)) ||
+        (name === 'verticalAnchor' && ['top', 'middle', 'bottom'].includes(value))) {
+      overlaySettings[name] = value;
+    } else if (['horizontalPadding', 'verticalPadding'].includes(name) && Number.isInteger(value) && value >= 0 && value <= 10000) {
+      overlaySettings[name] = Math.min(value, positionLimits()[name]);
     } else if (['backgroundColor', 'textColor'].includes(name) && typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)) {
       overlaySettings[name] = value;
-    } else if (name === 'backgroundBlur' && typeof value === 'boolean' && backgroundBlurSupported) {
-      overlaySettings.backgroundBlur = value;
     } else if ((name === 'allowClickThrough' || name === 'reduceOpacityOnHover') && typeof value === 'boolean') {
       overlaySettings[name] = value;
     } else {
       return;
     }
     applyOverlayState();
+    applyPosition();
+    controls.webContents.send('settings-state', settingsState());
   });
 
   ipcMain.on('dismiss-settings', (event) => {
@@ -267,17 +288,18 @@ app.whenReady().then(async () => {
   });
 
   await overlay.loadFile(path.join(__dirname, 'overlay.html'));
+  if (!app.isPackaged && process.argv.includes('--devtools')) {
+    overlay.webContents.openDevTools({ mode: 'detach' });
+  }
   const tray = new Tray(path.join(__dirname, 'singalong-icon.png'));
   tray.setToolTip('SingAlong');
   function updateTrayLanguage() {
     tray.setContextMenu(Menu.buildFromTemplate([
       { label: t('openSettings'), click: openSettings },
       { label: t('recoverPosition'), click: () => {
-        const area = screen.getPrimaryDisplay().workArea;
-        const { width, height } = overlay.getBounds();
-        drag = null;
-        moveOverlay(area.x + Math.round((area.width - width) / 2),
-          area.y + area.height - height - 40, screen.getPrimaryDisplay());
+        overlaySettings.horizontalAnchor = 'middle';
+        overlaySettings.verticalAnchor = 'bottom';
+        overlaySettings.verticalPadding = 40;
         revealOverlay();
       } },
       { type: 'separator' },
@@ -287,17 +309,6 @@ app.whenReady().then(async () => {
   updateTrayLanguage();
   tray.on('click', openSettings);
   app.once('will-quit', () => tray.destroy());
-
-  const editShortcutAvailable = globalShortcut.register(editShortcut, () => {
-    drag = null;
-    if (!gameMode) editing = !editing;
-    applyOverlayState();
-    revealOverlay();
-  });
-  if (!editShortcutAvailable) {
-    editing = true;
-    console.warn('Ctrl+Alt+L is unavailable. The overlay will open in drag mode.');
-  }
 
   if (!globalShortcut.register(quitShortcut, () => app.quit())) {
     console.warn('Ctrl+Alt+Q is unavailable. Stop the app from the terminal.');
@@ -323,7 +334,7 @@ app.whenReady().then(async () => {
     language = value;
     applyOverlayState();
     if (lastPlaybackFrame) publishPlayback(lastPlaybackFrame);
-    controls.webContents.send('settings-state', { ...overlaySettings, backgroundBlurSupported, ...localizationState() });
+    controls.webContents.send('settings-state', settingsState());
     updateTrayLanguage();
     return true;
   });
@@ -354,6 +365,7 @@ app.whenReady().then(async () => {
     ipcMain.removeHandler('resync-spotify');
     ipcMain.removeHandler('set-language');
   });
+  applyPosition();
   overlay.showInactive();
   keepOverlayOnTop();
   // Fullscreen transitions can reorder topmost windows after focus has changed.
@@ -368,7 +380,7 @@ app.whenReady().then(async () => {
     screen.removeListener('display-metrics-changed', revealOverlay);
     screen.removeListener('display-removed', revealOverlay);
   });
-  const cursorTimer = setInterval(updateCursor, 32);
+  const cursorTimer = setInterval(updateCursorHover, 32);
   overlay.on('closed', () => {
     clearInterval(topmostTimer);
     for (const timer of focusRecoveryTimers) clearTimeout(timer);

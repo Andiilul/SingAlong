@@ -1,13 +1,13 @@
 {
   "name": "electron-singalong",
   "productName": "SingAlong",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Desktop lyrics overlay for Windows",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build:installer": "node build/installer.js",
-    "check": "node --check main.js && node --check preload.js && node --check controls-preload.js && node --check playback.js && node --check playback-clock.js && node --check lyrics.js && node --check build/installer.js"
+    "check": "node --check main.js && node --check preload.js && node --check controls-preload.js && node --check playback.js && node --check playback-clock.js && node --check lyrics.js && node --check build/installer.js && node --check window-position.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,12 @@
   "devDependencies": {
     "electron": "^45.3.3",
     "electron-builder": "^26.18.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-icons": "^5.7.0",
     "semver": "^7.8.6"
+  },
+  "dependencies": {
+    "koffi": "^3.3.8"
   }
 }

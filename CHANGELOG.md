@@ -4,6 +4,43 @@ Perubahan SingAlong dicatat di file ini. Versi **0.x** menandai tahap pengembang
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-18
+
+### Ditambahkan
+
+- Pengaturan Position dengan anchor horizontal Left/Middle/Right dan vertikal Top/Middle/Bottom.
+- Slider dan input angka padding per sumbu yang tersinkron dan langsung diterapkan.
+
+### Diubah
+
+- Padding nonaktif pada sumbu dengan anchor Middle. Kedua kontrol padding tersembunyi saat kedua sumbu Middle.
+- Shortcut Ctrl + Alt + L dan mode drag dihapus.
+
+### Dihapus
+
+- Opsi background blur beserta integrasi Acrylic dan pembatasan region jendela.
+
+### Diperbaiki
+
+- Anchor mengacu ke batas layar penuh dan panel yang terlihat, sehingga padding nol menempel ke tepi layar. Padding angka diterapkan langsung saat diketik.
+- Pemindahan overlay di Windows memakai SetWindowPos dengan SWP_NOSIZE untuk menghindari pertambahan ukuran saat drag berulang.
+- Ukuran overlay dikunci dan penyesuaian ukuran otomatis dihapus agar proses drag tidak memperbesar jendela.
+- Ikon sync, hide controller, dan menu menggunakan SVG dari React Icons dengan ukuran dan posisi tengah yang seragam.
+- Jendela pengaturan diprioritaskan di atas overlay saat dibuka.
+
+## [0.2.2] - 2026-11-18
+
+### Diperbaiki
+
+- Ikon SingAlong ditanamkan ke executable, installer, uninstaller, dan shortcut Windows melalui resource ikon multiukuran.
+
+## [0.2.1] - 2026-11-18
+
+### Diperbaiki
+
+- Background jendela overlay dibuat transparan secara eksplisit dan tinggi jendela mengikuti isi agar tidak meninggalkan area kosong di bawah panel.
+- Efek Acrylic hanya diubah saat opsi blur berubah, dengan pemulihan background transparan saat dimatikan.
+
 ## [0.2.0] - 2026-11-18
 
 Localization English dan Indonesia.

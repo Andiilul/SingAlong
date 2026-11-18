@@ -9,9 +9,12 @@
 :root {
   font-family: "Segoe UI", sans-serif;
   color: white;
+  background: transparent;
 }
 
 body {
+  background: transparent;
+  overflow: hidden;
   margin: 0;
   padding: 6px;
   user-select: none;
@@ -102,6 +105,8 @@ body:has(.playback-buttons:hover) main {
 #resync,
 #toggle-controller {
   position: absolute;
+  display: grid;
+  place-items: center;
   top: 12px;
   right: 12px;
   width: 30px;
@@ -123,13 +128,28 @@ body:has(.playback-buttons:hover) main {
 #resync {
   left: 12px;
   right: auto;
-  font-size: 23px;
 }
 
 #toggle-controller {
   left: 48px;
   right: auto;
-  font-size: 20px;
+}
+
+#settings-menu svg,
+#resync svg,
+#toggle-controller svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+#toggle-controller svg {
+  transition: transform 140ms ease;
+}
+
+.controller-hidden #toggle-controller svg {
+  transform: rotate(180deg);
 }
 
 #resync:hover {
@@ -171,33 +191,13 @@ p {
   margin: 0;
 }
 
-.status,
-.drag-hint {
+.status {
   margin-bottom: 4px;
   color: #c5c2d3;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.drag-hint,
-.editing .status {
-  display: none;
-}
-
-.editing .drag-hint {
-  display: block;
-}
-
-.editing main {
-  border-color: #baadff;
-  cursor: grab;
-  opacity: 1;
-}
-
-.editing main:active {
-  cursor: grabbing;
 }
 
 .current {

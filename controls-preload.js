@@ -17,16 +17,29 @@ window.addEventListener('DOMContentLoaded', () => {
       languageSelect.disabled = false;
     }
   });
+  for (const id of ['horizontalAnchor', 'verticalAnchor']) {
+    const select = document.getElementById(id);
+    select.addEventListener('change', () => {
+      ipcRenderer.send('update-overlay-setting', id, select.value);
+    });
+  }
   const inputs = document.querySelectorAll('input');
   for (const input of inputs) {
     input.addEventListener('input', () => {
       let value = input.value;
+      if (input.type === 'number') {
+        if (!input.checkValidity() || !Number.isInteger(input.valueAsNumber)) {
+          return;
+        }
+        value = input.valueAsNumber;
+      }
       if (input.type === 'checkbox') value = input.checked;
       if (input.type === 'range') {
         value = input.valueAsNumber;
-        document.querySelector(`output[for="${input.id}"]`).value = `${value}%`;
+        const output = document.querySelector(`output[for="${input.id}"]`);
+        if (output) output.value = `${value}%`;
       }
-      ipcRenderer.send('update-overlay-setting', input.id, value);
+      ipcRenderer.send('update-overlay-setting', input.dataset.setting ?? input.id, value);
     });
   }
   ipcRenderer.on('settings-state', (_event, settings) => {
@@ -35,6 +48,21 @@ window.addEventListener('DOMContentLoaded', () => {
     document.documentElement.lang = activeLanguage;
     document.title = translations.settingsTitle;
     languageSelect.value = activeLanguage;
+    document.querySelector('#horizontalAnchor').value = settings.horizontalAnchor;
+    document.querySelector('#verticalAnchor').value = settings.verticalAnchor;
+    const middleX = settings.horizontalAnchor === 'middle';
+    const middleY = settings.verticalAnchor === 'middle';
+    document.querySelector('#horizontalPadding').disabled = middleX;
+    document.querySelector('#verticalPadding').disabled = middleY;
+    document.querySelector('#horizontalPadding').max = settings.positionLimits.horizontalPadding;
+    document.querySelector('#verticalPadding').max = settings.positionLimits.verticalPadding;
+    for (const axis of ['horizontal', 'vertical']) {
+      const number = document.getElementById(`${axis}Padding`);
+      const slider = document.getElementById(`${axis}PaddingSlider`);
+      slider.disabled = number.disabled;
+      slider.max = number.max;
+    }
+    document.querySelector('#position-padding').hidden = middleX && middleY;
     for (const element of document.querySelectorAll('[data-i18n]')) {
       element.textContent = translations[element.dataset.i18n];
     }
@@ -43,14 +71,12 @@ window.addEventListener('DOMContentLoaded', () => {
       button.title = translations[key];
       button.setAttribute('aria-label', translations[key]);
     }
-    document.querySelector('#backgroundBlur').disabled = !settings.backgroundBlurSupported;
-    document.querySelector('#background-blur-row').title = settings.backgroundBlurSupported
-      ? translations.acrylic : translations.blurUnavailable;
     for (const input of inputs) {
       if (input.type === 'checkbox') input.checked = settings[input.id];
-      else input.value = settings[input.id];
+      else input.value = settings[input.dataset.setting ?? input.id];
       if (input.type === 'range') {
-        document.querySelector(`output[for="${input.id}"]`).value = `${input.value}%`;
+        const output = document.querySelector(`output[for="${input.id}"]`);
+        if (output) output.value = `${input.value}%`;
       }
     }
   });

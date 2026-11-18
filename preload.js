@@ -40,13 +40,6 @@ window.addEventListener('DOMContentLoaded', () => {
     ipcRenderer.send('lyrics-bounds', { left, top, right, bottom });
   }).observe(lyrics, { box: 'border-box' });
 
-  lyrics.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0 || event.target.closest('.timeline, .playback-buttons') || !document.body.classList.contains('editing')) return;
-    lyrics.setPointerCapture(event.pointerId);
-    ipcRenderer.send('overlay-drag', true);
-  });
-  lyrics.addEventListener('lostpointercapture', () => ipcRenderer.send('overlay-drag', false));
-
   const menu = document.querySelector('#settings-menu');
   menu.addEventListener('mouseenter', () => ipcRenderer.send('overlay-menu-hover', true));
   menu.addEventListener('mouseleave', () => ipcRenderer.send('overlay-menu-hover', false));
@@ -94,7 +87,6 @@ window.addEventListener('DOMContentLoaded', () => {
   toggleController.addEventListener('click', () => {
     const hidden = document.body.classList.toggle('controller-hidden');
     const label = t(hidden ? 'showControls' : 'hideControls');
-    toggleController.textContent = hidden ? '⌃' : '⌄';
     toggleController.title = label;
     toggleController.setAttribute('aria-label', label);
     toggleController.setAttribute('aria-expanded', String(!hidden));
@@ -141,10 +133,9 @@ ipcRenderer.on('lyrics-hover', (_event, hovered) => {
   document.body.classList.toggle('lyrics-hovered', hovered);
 });
 
-ipcRenderer.on('overlay-state', (_event, { editing, gameMode, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor, language, translations: messages }) => {
+ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor, language, translations: messages }) => {
   translations = messages;
   document.documentElement.lang = language;
-  document.querySelector('.drag-hint').textContent = t('dragHint');
   document.querySelector('#game-notice strong').textContent = t('gameMode');
   document.querySelector('#game-notice p').textContent = t('gameSubtitle');
   for (const [id, key] of [['settings-menu', 'openSettings'], ['resync', 'resync'], ['previous-track', 'previous'], ['next-track', 'next'], ['seek', 'position'], ['toggle-controller', document.body.classList.contains('controller-hidden') ? 'showControls' : 'hideControls']]) {
@@ -160,7 +151,6 @@ ipcRenderer.on('overlay-state', (_event, { editing, gameMode, backgroundOpacity,
   style.setProperty('--lyrics-color', `${textColor}${alpha(textOpacity)}`);
   style.setProperty('--lyrics-next-color', `${textColor}${alpha(textOpacity * 0.72)}`);
   style.setProperty('--overlay-hover-opacity', reduceOpacityOnHover ? 0.35 : 1);
-  document.body.classList.toggle('editing', editing);
 
   if (gameMode !== wasInGameMode) {
     wasInGameMode = gameMode;
