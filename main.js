@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, screen, Tray } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, Menu, screen, shell, Tray } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const languages = { en: require('./locales/en.json'), id: require('./locales/id.json') };
@@ -199,16 +199,43 @@ app.whenReady().then(async () => {
 
     confirmingClose = true;
     try {
-      const { response } = await dialog.showMessageBox(window, {
-        type: 'question',
-        title: 'SingAlong',
-        message: t('closeQuestion'),
-        buttons: [t('yes'), t('no')],
-        defaultId: 1,
-        cancelId: 1,
-        noLink: true,
+      const confirmed = await new Promise((resolve, reject) => {
+        const confirmation = new BrowserWindow({
+          parent: controls?.isVisible() ? controls : window,
+          modal: true,
+          frame: false,
+          width: 400,
+          height: 220,
+          resizable: false,
+          maximizable: false,
+          fullscreenable: false,
+          skipTaskbar: true,
+          backgroundColor: '#15141e',
+          show: false,
+          webPreferences: { preload: path.join(__dirname, 'confirm-preload.js') },
+        });
+        confirmation.setAlwaysOnTop(true, 'screen-saver');
+        let accepted = false;
+        const respond = (event, answer) => {
+          if (event.sender !== confirmation.webContents || typeof answer !== 'boolean') return;
+          accepted = answer;
+          confirmation.close();
+        };
+        ipcMain.on('confirm-exit-result', respond);
+        confirmation.once('closed', () => {
+          ipcMain.removeListener('confirm-exit-result', respond);
+          resolve(accepted);
+        });
+        confirmation.loadFile(path.join(__dirname, 'confirm.html')).then(() => {
+          if (confirmation.isDestroyed()) return;
+          confirmation.webContents.send('confirmation-language', localizationState());
+          confirmation.show();
+        }).catch(error => {
+          reject(error);
+          if (!confirmation.isDestroyed()) confirmation.destroy();
+        });
       });
-      if (response === 0) app.quit();
+      if (confirmed) app.quit();
     } catch (error) {
       console.error(error);
     } finally {
@@ -283,8 +310,14 @@ app.whenReady().then(async () => {
     if (event.sender === controls?.webContents && !confirmingClose) controls.destroy();
   });
 
-  ipcMain.on('close-settings', (event) => {
-    if (event.sender === controls?.webContents) controls.close();
+  ipcMain.on('exit-overlay', (event) => {
+    if (event.sender === overlay.webContents) overlay.close();
+  });
+
+  ipcMain.on('open-github-credit', (event) => {
+    if (event.sender === controls?.webContents) {
+      void shell.openExternal('https://github.com/Andiilul').catch(console.error);
+    }
   });
 
   await overlay.loadFile(path.join(__dirname, 'overlay.html'));

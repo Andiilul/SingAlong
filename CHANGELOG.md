@@ -4,6 +4,35 @@ Perubahan SingAlong dicatat di file ini. Versi **0.x** menandai tahap pengembang
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-18
+
+### Ditambahkan
+
+- UI installer WPF custom dengan palet gelap/lavender yang mengikuti pengaturan SingAlong.
+- Header tanpa frame Windows, tombol minimize/close, navigasi Back/Install, pilihan instalasi per pengguna atau seluruh komputer, dan input folder instalasi.
+- Halaman progress, halaman selesai dengan tombol membuka SingAlong, serta dialog pembatalan custom.
+- Kredit Created by Andiilul 2026 dan tautan GitHub @Andiilul pada installer dan pengaturan aplikasi.
+- Pencegahan beberapa instance wizard berjalan bersamaan.
+
+### Diubah
+
+- NSIS menjadi engine instalasi silent yang dibungkus UI WPF. Payload aplikasi disertakan satu kali dalam installer akhir.
+- Teks dan ikon wizard dirender langsung dengan deklarasi DPI per monitor, menggantikan sidebar bitmap dan kontrol wizard standar.
+- Build menghasilkan engine di subfolder engine dan installer distributable di folder versi utama. Nama final installer baru tersedia setelah kompilasi dan pemeriksaan payload berhasil.
+- Tombol keluar dipindahkan dari pengaturan ke overlay dengan ikon power.
+- Konfirmasi keluar memakai dialog custom berpalet SingAlong dan mengikuti pilihan bahasa. No membatalkan, sedangkan Yes menghentikan seluruh aplikasi.
+
+### Diperbaiki
+
+- Menghapus implementasi tema NSIS lama yang memicu warning 6020 karena fungsi uninstaller masuk ke tahap kompilasi installer biasa.
+- Menghindari file sementara hasil kompilasi wizard tampil sebagai installer final saat build belum selesai.
+
+### Verifikasi
+
+- Kompilasi UI WPF, navigasi halaman, pilihan scope, dan render preview telah diperiksa terpisah dari build aplikasi.
+- Instalasi end-to-end melalui wrapper WPF dan NSIS masih perlu diuji setelah build installer lengkap.
+- Uninstaller tetap memakai antarmuka standar NSIS.
+
 ## [0.3.0] - 2026-11-18
 
 ### Ditambahkan

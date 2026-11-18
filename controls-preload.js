@@ -66,7 +66,7 @@ window.addEventListener('DOMContentLoaded', () => {
     for (const element of document.querySelectorAll('[data-i18n]')) {
       element.textContent = translations[element.dataset.i18n];
     }
-    for (const [id, key] of [['dismiss-settings', 'dismissSettings'], ['close-settings', 'exit']]) {
+    for (const [id, key] of [['dismiss-settings', 'dismissSettings']]) {
       const button = document.getElementById(id);
       button.title = translations[key];
       button.setAttribute('aria-label', translations[key]);
@@ -81,5 +81,5 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.querySelector('#dismiss-settings').addEventListener('click', () => ipcRenderer.send('dismiss-settings'));
-  document.querySelector('#close-settings').addEventListener('click', () => ipcRenderer.send('close-settings'));
+  document.querySelector('#github-credit').addEventListener('click', () => ipcRenderer.send('open-github-credit'));
 });

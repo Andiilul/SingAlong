@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const semver = require('semver');
+const { compileWizard } = require('./wizard');
 
 const projectDir = path.resolve(__dirname, '..');
 
@@ -28,6 +29,7 @@ async function buildInstaller() {
 
   try {
     const { build, Platform, Arch } = require('electron-builder');
+    const engineDir = path.join(outputDir, 'engine');
     await build({
       projectDir,
       targets: Platform.WINDOWS.createTarget('nsis', Arch.x64),
@@ -37,23 +39,25 @@ async function buildInstaller() {
         productName: 'SingAlong',
         extraMetadata: { version },
         electronLanguages: ['en-US', 'id'],
-        directories: { output: outputDir, buildResources: __dirname },
+        directories: { output: engineDir, buildResources: __dirname },
         // PowerShell helpers must be real files that Windows can execute.
         asar: false,
         files: [
           'main.js', 'preload.js', 'playback.js', 'playback-clock.js', 'lyrics.js', 'window-position.js',
           'overlay.html', 'overlay.css', 'controls.html', 'controls.css',
           'controls-preload.js', 'spotify.ps1', 'fullscreen.ps1',
+          'confirm.html', 'confirm.css', 'confirm-preload.js',
           'singalong-icon.png', 'font/**/*', 'locales/*.json', 'package.json',
         ],
         electronDist: path.join(projectDir, 'node_modules', 'electron', 'dist'),
         win: {
           target: 'nsis',
-          artifactName: 'SingAlong-${version}.${ext}',
+          artifactName: 'SingAlong-${version}-engine.${ext}',
           icon: path.join(__dirname, 'icon.ico'),
           signExecutable: false,
         },
         nsis: {
+          include: path.join(__dirname, 'installer.nsh'),
           installerIcon: path.join(__dirname, 'icon.ico'),
           uninstallerIcon: path.join(__dirname, 'icon.ico'),
           oneClick: false,
@@ -66,8 +70,16 @@ async function buildInstaller() {
       },
     });
     const installer = path.join(outputDir, `SingAlong-${version}.exe`);
-    const stat = await fs.stat(installer);
-    if (!stat.size) throw new Error('The installer is empty.');
+    const pendingInstaller = path.join(outputDir, `SingAlong-${version}.pending.exe`);
+    const enginePath = path.join(engineDir, `SingAlong-${version}-engine.exe`);
+    await compileWizard({
+      version,
+      enginePath,
+      outputPath: pendingInstaller,
+    });
+    const [stat, engineStat] = await Promise.all([fs.stat(pendingInstaller), fs.stat(enginePath)]);
+    if (stat.size <= engineStat.size) throw new Error('The custom installer does not contain its installation engine.');
+    await fs.rename(pendingInstaller, installer);
     await fs.writeFile(path.join(outputDir, 'build-status.json'),
       JSON.stringify({ version, status: 'complete', installer: path.basename(installer) }, null, 2) + '\n');
     console.log(`Installer ready: ${installer}`);

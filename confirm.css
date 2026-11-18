@@ -1,0 +1,40 @@
+body {
+  overflow: hidden;
+}
+
+main {
+  padding: 22px;
+}
+
+h1 {
+  font-size: 21px;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.confirmation-actions button {
+  min-width: 84px;
+  padding: 8px 18px;
+  border: 1px solid #453c59;
+  border-radius: 9px;
+  background: #211d31;
+  color: #f5f1ff;
+  font: inherit;
+  cursor: pointer;
+}
+
+#yes {
+  border-color: #bba6ff;
+  background: #bba6ff;
+  color: #251c3d;
+  font-weight: 600;
+}
+
+.confirmation-actions button:hover {
+  filter: brightness(1.12);
+}

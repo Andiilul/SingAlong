@@ -256,3 +256,21 @@ kbd {
   outline: 2px solid #e0d2ff;
   outline-offset: 3px;
 }
+
+.credits {
+  line-height: 1.8;
+  text-align: center;
+}
+
+#github-credit {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #bba6ff;
+  font: inherit;
+  cursor: pointer;
+}
+
+#github-credit:hover {
+  text-decoration: underline;
+}

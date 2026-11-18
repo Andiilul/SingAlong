@@ -44,6 +44,10 @@ window.addEventListener('DOMContentLoaded', () => {
   menu.addEventListener('mouseenter', () => ipcRenderer.send('overlay-menu-hover', true));
   menu.addEventListener('mouseleave', () => ipcRenderer.send('overlay-menu-hover', false));
   menu.addEventListener('click', () => ipcRenderer.send('open-settings'));
+  const exit = document.querySelector('#exit-overlay');
+  exit.addEventListener('mouseenter', () => ipcRenderer.send('overlay-menu-hover', true));
+  exit.addEventListener('mouseleave', () => ipcRenderer.send('overlay-menu-hover', false));
+  exit.addEventListener('click', () => ipcRenderer.send('exit-overlay'));
   const resync = document.querySelector('#resync');
   resync.addEventListener('mouseenter', () => ipcRenderer.send('overlay-menu-hover', true));
   resync.addEventListener('mouseleave', () => ipcRenderer.send('overlay-menu-hover', false));
@@ -138,7 +142,7 @@ ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpac
   document.documentElement.lang = language;
   document.querySelector('#game-notice strong').textContent = t('gameMode');
   document.querySelector('#game-notice p').textContent = t('gameSubtitle');
-  for (const [id, key] of [['settings-menu', 'openSettings'], ['resync', 'resync'], ['previous-track', 'previous'], ['next-track', 'next'], ['seek', 'position'], ['toggle-controller', document.body.classList.contains('controller-hidden') ? 'showControls' : 'hideControls']]) {
+  for (const [id, key] of [['exit-overlay', 'exit'], ['settings-menu', 'openSettings'], ['resync', 'resync'], ['previous-track', 'previous'], ['next-track', 'next'], ['seek', 'position'], ['toggle-controller', document.body.classList.contains('controller-hidden') ? 'showControls' : 'hideControls']]) {
     const element = document.getElementById(id);
     element.title = t(key);
     element.setAttribute('aria-label', t(key));
@@ -158,6 +162,7 @@ ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpac
     const notice = document.querySelector('#game-notice');
     notice.hidden = !gameMode;
     document.querySelector('#settings-menu').disabled = gameMode;
+    document.querySelector('#exit-overlay').disabled = gameMode;
     document.querySelector('#resync').disabled = gameMode;
     document.querySelector('#seek').disabled = gameMode || !canSeek || seekPending;
     clearTimeout(gameNoticeTimer);

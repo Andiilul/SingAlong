@@ -103,7 +103,8 @@ body:has(.playback-buttons:hover) main {
 
 #settings-menu,
 #resync,
-#toggle-controller {
+#toggle-controller,
+#exit-overlay {
   position: absolute;
   display: grid;
   place-items: center;
@@ -137,7 +138,8 @@ body:has(.playback-buttons:hover) main {
 
 #settings-menu svg,
 #resync svg,
-#toggle-controller svg {
+#toggle-controller svg,
+#exit-overlay svg {
   display: block;
   width: 20px;
   height: 20px;
@@ -160,6 +162,18 @@ body:has(.playback-buttons:hover) main {
 #resync:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+#exit-overlay {
+  right: 48px;
+}
+
+#exit-overlay:hover {
+  background: #623345;
+}
+
+#exit-overlay:disabled {
+  opacity: 0.45;
 }
 
 #game-notice {

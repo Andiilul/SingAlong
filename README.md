@@ -2,7 +2,7 @@
 
 SingAlong displays synchronized Spotify Desktop lyrics in a customizable Windows overlay. Follow the current line and preview the next while gaming or using other apps.
 
-The current development version is **0.2.2**. Playback synchronization and fullscreen focus handling are still being refined.
+The current development version is **0.3.1**. Playback synchronization and fullscreen focus handling are still being refined.
 
 ## Getting started
 
@@ -57,7 +57,7 @@ Game Mode ends when focus returns to a regular window. Other fullscreen apps can
 
 The **−** button closes settings while the overlay remains active and SingAlong stays visible in the taskbar.
 
-The **×** settings button or the taskbar's **Close window** command shows “Close SingAlong?”. Choose **Yes** to exit the entire app or **No** to cancel.
+The overlay power button or the taskbar's **Close window** command opens a custom “Close SingAlong?” confirmation. Choose **Yes** to exit the entire app or **No** to cancel.
 
 To exit immediately, choose **Keluar dari SingAlong** in the tray menu or press **Ctrl + Alt + Q**. Exiting stops the Windows media helper.
 
@@ -87,7 +87,13 @@ Change the configured version for each new build. Versions must use canonical `m
 
 The configured version is applied to the packaged app. The source package.json and lockfile keep their development version. Generated output is ignored by Git.
 
-The installer supports per-user installation and a selectable destination. Build tools may require internet access on the first run. The current build produces an unsigned installer.
+The installer uses a custom WPF interface with the SingAlong dark/lavender palette, creator credits, and a GitHub link. It supports per-user or all-users installation and an editable destination folder. All-users installation requests Windows administrator permission. The UI invokes an embedded NSIS engine silently.
+
+The wizard renders text and icons directly and declares per-monitor DPI awareness. Building it requires the Windows .NET Framework compiler and WPF assemblies. Windows 10 version 1809 and later include a compatible .NET Framework runtime.
+
+The NSIS engine and intermediate files are stored in the version folder's `engine/` subdirectory. Distribute the top-level `SingAlong-{version}.exe`, which contains the engine. The uninstaller retains the standard NSIS interface.
+
+Build tools may require internet access on the first run. The current build produces an unsigned installer.
 
 ## How it works
 
@@ -126,6 +132,8 @@ This checks JavaScript syntax. Spotify interaction, fullscreen behavior, and vis
 | fullscreen.ps1 | Foreground fullscreen detection |
 | build/config.json | Installer version |
 | build/installer.js | Version validation, output reservation, and installer build |
+| build/Wizard.cs, build/wizard.xaml | Custom Windows installer interface and installation flow |
+| build/wizard.js, build/wizard.manifest | Wizard compilation and Windows DPI declaration |
 
 The local lyric font is loaded from `font/Spotify-Font.ttf`. The supplied file identifies itself as Gotham Bold.
 
@@ -133,10 +141,24 @@ The local lyric font is loaded from `font/Spotify-Font.ttf`. The supplied file i
 
 ### Unreleased
 
-- Replace dragging and Ctrl + Alt + L with horizontal/vertical anchors and per-axis padding in settings.
+### 0.3.1 — November 18, 2026
 
-- Lock the overlay dimensions and remove automatic resizing during content changes.
-- Remove the background blur option and Windows Acrylic integration.
+- Fully custom WPF installer with a frameless header, custom buttons, install scope and folder selection, progress, finish page, and cancellation dialog.
+- Live text and vector graphics with per-monitor DPI awareness.
+- A silent NSIS installation engine embedded once in the distributable. Intermediate files remain in the engine subfolder.
+- Creator credits and GitHub links in the installer and app settings.
+- Move the exit button to the overlay and use a custom localized exit confirmation.
+- Reserve the final installer name until the wizard and embedded payload are ready.
+- UI compilation and preview navigation were verified. Full installation still needs end-to-end testing; the uninstaller retains the standard NSIS interface.
+
+### 0.3.0 — November 18, 2026
+
+- Horizontal and vertical anchors with synchronized padding sliders and number inputs.
+- Position the visible panel against full screen edges, with live padding updates.
+- Disable padding for centered axes and hide both padding controls when both axes are centered.
+- Remove dragging, Ctrl + Alt + L, automatic overlay resizing, and background blur.
+- Use aligned React Icons for sync, controller visibility, and menu buttons.
+- Keep settings above the overlay.
 
 ### 0.2.2 — November 18, 2026
 
