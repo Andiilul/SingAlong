@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SingAlong</title>
+  <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+  <main>
+    <p class="status">Spotify Desktop</p>
+    <p class="drag-hint">Seret overlay · Ctrl+Alt+L untuk kunci</p>
+    <p class="current">Putar lagu di Spotify Desktop</p>
+    <p class="next"></p>
+    <div id="playback-controls" class="playback-buttons">
+      <button id="previous-track" type="button" aria-label="Lagu sebelumnya" title="Lagu sebelumnya" disabled>⏮</button>
+      <button id="play-pause" type="button" aria-label="Putar" title="Putar" disabled>▶</button>
+      <button id="next-track" type="button" aria-label="Lagu berikutnya" title="Lagu berikutnya" disabled>⏭</button>
+    </div>
+    <div class="timeline">
+      <span id="elapsed">0:00</span>
+      <input id="seek" type="range" min="0" max="1" value="0" step="100" aria-label="Posisi lagu" disabled>
+      <span id="duration">0:00</span>
+    </div>
+    <p id="seek-message" role="status"></p>
+  </main>
+  <button id="settings-menu" type="button" aria-label="Buka pengaturan" title="Buka pengaturan">☰</button>
+  <button id="resync" type="button" aria-label="Sinkronkan ulang Spotify dan lirik" title="Sinkronkan ulang Spotify dan lirik">↻</button>
+  <button id="toggle-controller" type="button" aria-label="Sembunyikan kontrol playback" title="Sembunyikan kontrol playback" aria-expanded="true">⌄</button>
+  <aside id="game-notice" role="status" hidden>
+    <strong>Mode Game aktif</strong>
+    <p>Aktif otomatis saat jendela fullscreen mendapat fokus.</p>
+  </aside>
+</body>
+</html>

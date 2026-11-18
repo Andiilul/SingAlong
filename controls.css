@@ -1,0 +1,212 @@
+:root {
+  color-scheme: dark;
+  font: 14px "Segoe UI", sans-serif;
+  color: #f5f1ff;
+  background: #15141e;
+  accent-color: #bba6ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  user-select: none;
+}
+
+.titlebar {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 18px;
+  border-bottom: 1px solid #302b42;
+  background: #1c1929;
+  font-weight: 650;
+  app-region: drag;
+}
+
+.window-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  app-region: no-drag;
+}
+
+.window-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #d8d0ed;
+  cursor: pointer;
+}
+
+.window-button:hover {
+  background: #363049;
+  color: white;
+}
+
+#close-settings:hover {
+  background: #623345;
+}
+
+.minimize-icon,
+.close-icon::before,
+.close-icon::after {
+  width: 12px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.close-icon {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.close-icon::before,
+.close-icon::after {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.close-icon::after {
+  transform: rotate(-45deg);
+}
+
+main {
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+h2 {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.settings {
+  border: 1px solid #332e44;
+  border-radius: 14px;
+  background: #211d31;
+}
+
+.switch-row,
+.slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.switch-row,
+.slider-row {
+  padding: 12px 14px;
+}
+
+.switch-row {
+  border-bottom: 1px solid #332e44;
+  cursor: pointer;
+}
+
+.switch {
+  appearance: none;
+  display: grid;
+  align-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: #4a445c;
+  cursor: pointer;
+}
+
+.switch::before {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ddd4f4;
+  content: "";
+  transition: transform 120ms ease;
+}
+
+.switch:checked {
+  background: #bba6ff;
+}
+
+.switch:checked::before {
+  background: #251c3d;
+  transform: translateX(14px);
+}
+
+.switch:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+body {
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.titlebar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+output {
+  color: #d2c1ff;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="color"] {
+  width: 36px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #655778;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 8px 0 0;
+  cursor: pointer;
+}
+
+footer {
+  margin-top: 14px;
+  color: #bcb3ce;
+  font-size: 12px;
+}
+
+kbd {
+  padding: 2px 4px;
+  border: 1px solid #453c59;
+  border-radius: 4px;
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #e0d2ff;
+  outline-offset: 3px;
+}

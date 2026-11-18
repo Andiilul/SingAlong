@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pengaturan SingAlong</title>
+  <link rel="stylesheet" href="controls.css">
+</head>
+<body>
+  <header class="titlebar">
+    <img src="singalong-icon.png" width="24" height="24" alt="">
+    <span>SingAlong</span>
+    <div class="window-actions">
+      <button id="dismiss-settings" class="window-button" type="button" title="Sembunyikan pengaturan" aria-label="Sembunyikan pengaturan"><span class="minimize-icon"></span></button>
+      <button id="close-settings" class="window-button" type="button" title="Keluar dari SingAlong" aria-label="Keluar dari SingAlong"><span class="close-icon"></span></button>
+    </div>
+  </header>
+  <main>
+    <h1>Pengaturan overlay</h1>
+    <section class="settings">
+      <label class="switch-row">
+        Redupkan saat kursor di atas lirik
+        <input id="reduceOpacityOnHover" class="switch" type="checkbox" role="switch">
+      </label>
+      <label class="switch-row">
+        Teruskan klik ke aplikasi di belakang
+        <input id="allowClickThrough" class="switch" type="checkbox" role="switch">
+      </label>
+    </section>
+    <h2>Background</h2>
+    <section class="settings">
+      <label class="switch-row">Warna <input id="backgroundColor" type="color" value="#0e0f16"></label>
+      <label class="switch-row" id="background-blur-row">
+        Background blur
+        <input id="backgroundBlur" class="switch" type="checkbox" role="switch">
+      </label>
+      <div class="slider-row">
+        <div class="slider-label">
+          <label for="backgroundOpacity">Opacity</label>
+          <output for="backgroundOpacity">78%</output>
+        </div>
+        <input id="backgroundOpacity" type="range" min="0" max="100" value="78">
+      </div>
+    </section>
+    <h2>Teks</h2>
+    <section class="settings">
+      <label class="switch-row">Warna <input id="textColor" type="color" value="#ffffff"></label>
+      <div class="slider-row">
+        <div class="slider-label">
+          <label for="textOpacity">Opacity</label>
+          <output for="textOpacity">100%</output>
+        </div>
+        <input id="textOpacity" type="range" min="0" max="100" value="100">
+      </div>
+    </section>
+    <footer><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd> untuk geser overlay</footer>
+  </main>
+</body>
+</html>
