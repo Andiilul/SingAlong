@@ -96,4 +96,26 @@ Perintah ini memeriksa sintaks JavaScript. Verifikasi interaksi Spotify, fullscr
 
 Font lirik lokal dimuat dari `font/Spotify-Font.ttf`. Metadata file yang disediakan menyebut Gotham Bold.
 
-Riwayat perubahan tersedia di [CHANGELOG.md](CHANGELOG.md).
+## Changelog
+
+### Unreleased
+
+- Background blur melalui efek Acrylic pada Windows 11 build 22621 atau lebih baru.
+- Tombol re-sync untuk membaca ulang Spotify, mereset jam playback, dan mencari ulang lirik.
+- Tombol di samping re-sync untuk menyembunyikan atau menampilkan kontrol playback.
+- Pemeriksaan konsistensi metadata dan timestamp saat lagu diganti cepat.
+- Penundaan pencarian serta validasi respons lirik agar hasil lagu sebelumnya diabaikan.
+- Pemilihan kandidat lirik dengan selisih durasi maksimal tiga detik.
+
+### 0.1.0 — 18 November 2026
+
+- Overlay lirik Spotify dengan baris aktif, baris berikutnya, font lokal, dan animasi pergantian teks.
+- Slider timestamp serta kontrol previous, play/pause, dan next.
+- Sinkronisasi pause, resume, seek, dan pergantian lagu melalui jam playback lokal.
+- Mode Game otomatis, klik-tembus, efek hover, serta pemulihan overlay saat perpindahan fokus.
+- Pengaturan warna dan opacity terpisah untuk background serta teks.
+- Toolbar custom, system tray, hotkey, dan konfirmasi keluar.
+
+Sinkronisasi langsung, kontrol playback, dan perilaku Alt+Tab fullscreen masih memerlukan pengujian lebih lanjut.
+
+Riwayat lengkap tersedia di [CHANGELOG.md](CHANGELOG.md).
