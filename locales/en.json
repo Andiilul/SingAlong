@@ -49,5 +49,15 @@
   "top": "Top",
   "bottom": "Bottom",
   "horizontalPadding": "Horizontal padding (px)",
-  "verticalPadding": "Vertical padding (px)"
+  "verticalPadding": "Vertical padding (px)",
+  "monitor": "Monitor",
+  "primary": "Primary",
+  "sizeHeading": "Size",
+  "fontSize": "Lyric font size (px)",
+  "panelWidth": "Panel width (px)",
+  "resetSize": "Reset sizes",
+  "showOverlay": "Show overlay",
+  "hideOverlay": "Hide overlay",
+  "hideShortcut": "Ctrl + Alt + H: hide / show overlay",
+  "hideShortcutUnavailable": "Ctrl + Alt + H is unavailable. Use the tray menu to hide / show."
 }

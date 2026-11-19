@@ -49,5 +49,15 @@
   "top": "Atas",
   "bottom": "Bawah",
   "horizontalPadding": "Padding horizontal (px)",
-  "verticalPadding": "Padding vertikal (px)"
+  "verticalPadding": "Padding vertikal (px)",
+  "monitor": "Monitor",
+  "primary": "Utama",
+  "sizeHeading": "Ukuran",
+  "fontSize": "Ukuran font lirik (px)",
+  "panelWidth": "Lebar panel (px)",
+  "resetSize": "Reset ukuran",
+  "showOverlay": "Tampilkan overlay",
+  "hideOverlay": "Sembunyikan overlay",
+  "hideShortcut": "Ctrl + Alt + H: sembunyikan / tampilkan overlay",
+  "hideShortcutUnavailable": "Ctrl + Alt + H tidak tersedia. Gunakan menu tray untuk sembunyikan / tampilkan."
 }

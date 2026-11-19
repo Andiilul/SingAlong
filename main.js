@@ -3,7 +3,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const languages = { en: require('./locales/en.json'), id: require('./locales/id.json') };
 const { followSpotify } = require('./playback');
-const { moveWindow } = require('./window-position');
+const { moveWindow, resizeWindow } = require('./window-position');
 
 const quitShortcut = 'CommandOrControl+Alt+Q';
 const overlaySettings = {
@@ -17,6 +17,9 @@ const overlaySettings = {
   verticalAnchor: 'bottom',
   horizontalPadding: 40,
   verticalPadding: 40,
+  monitorId: null,
+  fontSize: 26,
+  panelWidth: 680,
 };
 
 app.whenReady().then(async () => {
@@ -44,7 +47,8 @@ app.whenReady().then(async () => {
     transparent: true,
     backgroundColor: '#00000000',
     alwaysOnTop: true,
-    resizable: false,
+    // Native sizing is controlled by settings; will-resize blocks manual resizing.
+    resizable: true,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -57,6 +61,10 @@ app.whenReady().then(async () => {
   });
   overlay.on('will-resize', (event) => event.preventDefault());
 
+  overlaySettings.monitorId = String(screen.getPrimaryDisplay().id);
+  let overlayHidden = false;
+  let hideShortcutAvailable = false;
+  let requestedSize = '';
   let controls = null;
   let quitting = false;
   let confirmingClose = false;
@@ -75,7 +83,7 @@ app.whenReady().then(async () => {
     for (const delay of [0, 150, 600, 1200]) {
       const timer = setTimeout(() => {
         focusRecoveryTimers.delete(timer);
-        if (quitting || overlay.isDestroyed()) return;
+        if (quitting || overlay.isDestroyed() || overlayHidden) return;
         if (fromFullscreen && delay === 600 && !confirmingClose && !controls?.isVisible()) {
           // Re-present the transparent HWND after the fullscreen swapchain releases the display.
           overlay.hide();
@@ -91,7 +99,7 @@ app.whenReady().then(async () => {
   overlay.on('restore', recoverOverlayFocus);
 
   function keepOverlayOnTop() {
-    if (quitting || overlay.isDestroyed()) return;
+    if (quitting || overlay.isDestroyed() || overlayHidden) return;
     overlay.setAlwaysOnTop(true, 'screen-saver');
     if (!overlay.isVisible()) overlay.showInactive();
     if (confirmingClose) return;
@@ -102,8 +110,39 @@ app.whenReady().then(async () => {
     }
   }
 
+  function selectedDisplay() {
+    const display = screen.getAllDisplays().find(item => String(item.id) === overlaySettings.monitorId) ?? screen.getPrimaryDisplay();
+    overlaySettings.monitorId = String(display.id);
+    return display;
+  }
+
+  function sizeLimits() {
+    const maxWidth = Math.max(1, selectedDisplay().bounds.width);
+    return { minWidth: Math.min(320, maxWidth), maxWidth };
+  }
+
+  function syncOverlaySize() {
+    const display = selectedDisplay();
+    const limits = sizeLimits();
+    overlaySettings.panelWidth = Math.max(limits.minWidth, Math.min(overlaySettings.panelWidth, limits.maxWidth));
+    const width = overlaySettings.panelWidth + 12;
+    const height = Math.max(80, Math.ceil((lyricsBounds?.bottom ?? 236) + 6));
+    const signature = `${width}:${height}:${display.id}:${display.scaleFactor}`;
+    if (requestedSize === signature) return;
+    requestedSize = signature;
+    resizeWindow(overlay, width, height);
+  }
+
+  function toggleOverlay() {
+    if (confirmingClose) return;
+    overlayHidden = !overlayHidden;
+    if (overlayHidden) overlay.hide();
+    else revealOverlay();
+    updateTrayLanguage();
+  }
+
   function positionLimits() {
-    const area = screen.getPrimaryDisplay().bounds;
+    const area = selectedDisplay().bounds;
     const bounds = overlay.getBounds();
     const panelWidth = lyricsBounds ? lyricsBounds.right - lyricsBounds.left : bounds.width;
     const panelHeight = lyricsBounds ? lyricsBounds.bottom - lyricsBounds.top : bounds.height;
@@ -114,7 +153,7 @@ app.whenReady().then(async () => {
   }
 
   function applyPosition() {
-    const area = screen.getPrimaryDisplay().bounds;
+    const area = selectedDisplay().bounds;
     const limits = positionLimits();
     function offset(anchor, padding, space) {
       if (anchor === 'middle') return Math.round(space / 2);
@@ -131,10 +170,16 @@ app.whenReady().then(async () => {
   }
 
   function settingsState() {
-    return { ...overlaySettings, positionLimits: positionLimits(), ...localizationState() };
+    return { ...overlaySettings, positionLimits: positionLimits(), sizeLimits: sizeLimits(), hideShortcutAvailable,
+      monitors: screen.getAllDisplays().map(display => ({ id: String(display.id), label: display.label,
+        width: Math.round(display.size.width * display.scaleFactor), height: Math.round(display.size.height * display.scaleFactor),
+        primary: display.id === screen.getPrimaryDisplay().id })), ...localizationState() };
   }
 
   function revealOverlay() {
+    // Move onto the target display before converting the requested size to physical pixels.
+    applyPosition();
+    syncOverlaySize();
     applyPosition();
     if (controls && !controls.webContents.isLoading()) controls.webContents.send('settings-state', settingsState());
     keepOverlayOnTop();
@@ -144,6 +189,7 @@ app.whenReady().then(async () => {
     if (event.sender !== overlay.webContents ||
         !bounds || !['left', 'top', 'right', 'bottom'].every(key => Number.isFinite(bounds[key]))) return;
     lyricsBounds = bounds;
+    syncOverlaySize();
     applyPosition();
     if (controls && !controls.webContents.isLoading()) controls.webContents.send('settings-state', settingsState());
   });
@@ -169,6 +215,7 @@ app.whenReady().then(async () => {
   }
 
   function applyOverlayState() {
+    syncOverlaySize();
     applyMouseMode();
     overlay.webContents.send('overlay-state', { ...overlaySettings, gameMode, ...localizationState() });
     updateCursorHover();
@@ -294,6 +341,14 @@ app.whenReady().then(async () => {
       overlaySettings[name] = value;
     } else if (['horizontalPadding', 'verticalPadding'].includes(name) && Number.isInteger(value) && value >= 0 && value <= 10000) {
       overlaySettings[name] = Math.min(value, positionLimits()[name]);
+    } else if (name === 'monitorId' && screen.getAllDisplays().some(display => String(display.id) === value)) {
+      overlaySettings.monitorId = value;
+      applyPosition();
+      requestedSize = '';
+    } else if (name === 'fontSize' && Number.isInteger(value) && value >= 18 && value <= 48) {
+      overlaySettings.fontSize = value;
+    } else if (name === 'panelWidth' && Number.isInteger(value) && value >= sizeLimits().minWidth && value <= sizeLimits().maxWidth) {
+      overlaySettings.panelWidth = value;
     } else if (['backgroundColor', 'textColor'].includes(name) && typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)) {
       overlaySettings[name] = value;
     } else if ((name === 'allowClickThrough' || name === 'reduceOpacityOnHover') && typeof value === 'boolean') {
@@ -304,6 +359,14 @@ app.whenReady().then(async () => {
     applyOverlayState();
     applyPosition();
     controls.webContents.send('settings-state', settingsState());
+  });
+
+  ipcMain.on('reset-overlay-size', (event) => {
+    if (event.sender !== controls?.webContents) return;
+    overlaySettings.fontSize = 26;
+    overlaySettings.panelWidth = 680;
+    applyOverlayState();
+    revealOverlay();
   });
 
   ipcMain.on('dismiss-settings', (event) => {
@@ -329,7 +392,10 @@ app.whenReady().then(async () => {
   function updateTrayLanguage() {
     tray.setContextMenu(Menu.buildFromTemplate([
       { label: t('openSettings'), click: openSettings },
+      { label: t(overlayHidden ? 'showOverlay' : 'hideOverlay'), click: toggleOverlay },
       { label: t('recoverPosition'), click: () => {
+        overlayHidden = false;
+        updateTrayLanguage();
         overlaySettings.horizontalAnchor = 'middle';
         overlaySettings.verticalAnchor = 'bottom';
         overlaySettings.verticalPadding = 40;
@@ -347,6 +413,7 @@ app.whenReady().then(async () => {
     console.warn('Ctrl+Alt+Q is unavailable. Stop the app from the terminal.');
   }
 
+  hideShortcutAvailable = globalShortcut.register('CommandOrControl+Alt+H', toggleOverlay);
   applyOverlayState();
   let lastPlaybackFrame;
   const publishPlayback = (frame) => {
@@ -406,12 +473,14 @@ app.whenReady().then(async () => {
   overlay.on('blur', keepOverlayOnTop);
   screen.on('display-metrics-changed', revealOverlay);
   screen.on('display-removed', revealOverlay);
+  screen.on('display-added', revealOverlay);
   app.once('before-quit', () => {
     clearInterval(topmostTimer);
     for (const timer of focusRecoveryTimers) clearTimeout(timer);
     focusRecoveryTimers.clear();
     screen.removeListener('display-metrics-changed', revealOverlay);
     screen.removeListener('display-removed', revealOverlay);
+    screen.removeListener('display-added', revealOverlay);
   });
   const cursorTimer = setInterval(updateCursorHover, 32);
   overlay.on('closed', () => {

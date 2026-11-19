@@ -274,3 +274,28 @@ kbd {
 #github-credit:hover {
   text-decoration: underline;
 }
+
+#monitorId {
+  max-width: 240px;
+  min-width: 0;
+}
+
+#reset-size {
+  padding: 7px 12px;
+  border: 1px solid #655778;
+  border-radius: 8px;
+  background: #363049;
+  color: #f5f1ff;
+  font: inherit;
+  cursor: pointer;
+}
+
+#reset-size:hover {
+  background: #4a3c65;
+}
+
+#hide-shortcut {
+  margin: 10px 0 0;
+  color: #bcb3ce;
+  font-size: 12px;
+}

@@ -31,6 +31,7 @@
     </section>
     <h2 data-i18n="positionHeading">Posisi</h2>
     <section class="settings">
+      <label class="switch-row"><span data-i18n="monitor">Monitor</span><select id="monitorId"></select></label>
       <h3 data-i18n="anchor">Anchor</h3>
       <label class="switch-row">
         <span data-i18n="horizontal">Horizontal</span>
@@ -61,6 +62,25 @@
           </label>
           <input id="verticalPaddingSlider" data-setting="verticalPadding" type="range" min="0" max="10000" step="1" value="40" aria-labelledby="vertical-padding-label">
         </div>
+      </div>
+    </section>
+    <h2 data-i18n="sizeHeading">Size</h2>
+    <section class="settings">
+      <div class="slider-row">
+        <label class="slider-label" for="fontSize"><span id="fontSize-label" data-i18n="fontSize"></span>
+          <input id="fontSize" type="number" min="18" max="48" step="1" value="26">
+        </label>
+        <input id="fontSizeSlider" data-setting="fontSize" type="range" min="18" max="48" step="1" value="26" aria-labelledby="fontSize-label">
+      </div>
+      <div class="slider-row">
+        <label class="slider-label" for="panelWidth"><span id="panelWidth-label" data-i18n="panelWidth"></span>
+          <input id="panelWidth" type="number" min="320" max="1920" step="1" value="680">
+        </label>
+        <input id="panelWidthSlider" data-setting="panelWidth" type="range" min="320" max="1920" step="1" value="680" aria-labelledby="panelWidth-label">
+      </div>
+      <div class="slider-row">
+        <button id="reset-size" type="button" data-i18n="resetSize">Reset sizes</button>
+        <p id="hide-shortcut"></p>
       </div>
     </section>
     <h2 data-i18n="background">Background</h2>

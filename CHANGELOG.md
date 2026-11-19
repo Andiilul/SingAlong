@@ -4,6 +4,13 @@ Perubahan SingAlong dicatat di file ini. Versi **0.x** menandai tahap pengembang
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Ikon nada saat intro atau jeda musik yang ditandai baris kosong dalam lirik tersinkronisasi.
+- Dropdown monitor dengan fallback ke monitor utama ketika monitor dilepas.
+- Ctrl+Alt+H dan menu tray untuk menyembunyikan/menampilkan overlay tanpa menghentikan playback.
+- Slider dan input ukuran font 18–48 px serta lebar panel, tinggi otomatis, dan reset ukuran. Anchor mengikuti ukuran panel pada monitor terpilih.
+
 ## [0.3.1] - 2026-11-18
 
 ### Ditambahkan

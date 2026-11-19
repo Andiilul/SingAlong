@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
       languageSelect.disabled = false;
     }
   });
-  for (const id of ['horizontalAnchor', 'verticalAnchor']) {
+  for (const id of ['horizontalAnchor', 'verticalAnchor', 'monitorId']) {
     const select = document.getElementById(id);
     select.addEventListener('change', () => {
       ipcRenderer.send('update-overlay-setting', id, select.value);
@@ -50,6 +50,20 @@ window.addEventListener('DOMContentLoaded', () => {
     languageSelect.value = activeLanguage;
     document.querySelector('#horizontalAnchor').value = settings.horizontalAnchor;
     document.querySelector('#verticalAnchor').value = settings.verticalAnchor;
+    const monitor = document.getElementById('monitorId');
+    monitor.replaceChildren(...settings.monitors.map((display, index) => {
+      const option = document.createElement('option');
+      option.value = display.id;
+      option.textContent = `${display.label || `${translations.monitor} ${index + 1}`} · ${display.width}×${display.height}${display.primary ? ` (${translations.primary})` : ''}`;
+      return option;
+    }));
+    monitor.value = settings.monitorId;
+    for (const suffix of ['', 'Slider']) {
+      const width = document.getElementById(`panelWidth${suffix}`);
+      width.min = settings.sizeLimits.minWidth;
+      width.max = settings.sizeLimits.maxWidth;
+    }
+    document.getElementById('hide-shortcut').textContent = settings.hideShortcutAvailable ? translations.hideShortcut : translations.hideShortcutUnavailable;
     const middleX = settings.horizontalAnchor === 'middle';
     const middleY = settings.verticalAnchor === 'middle';
     document.querySelector('#horizontalPadding').disabled = middleX;
@@ -80,6 +94,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+  document.querySelector('#reset-size').addEventListener('click', () => ipcRenderer.send('reset-overlay-size'));
   document.querySelector('#dismiss-settings').addEventListener('click', () => ipcRenderer.send('dismiss-settings'));
   document.querySelector('#github-credit').addEventListener('click', () => ipcRenderer.send('open-github-credit'));
 });

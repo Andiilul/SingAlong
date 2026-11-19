@@ -21,6 +21,8 @@ Start a song in Spotify Desktop. SingAlong opens the overlay immediately and sea
 
 ## Features
 
+Want to help test a beta? Follow the [user testing checklist (Indonesian)](BETA_TESTING.md) and use its bug report template.
+
 - Current and next lyric lines with a short fade and slide animation.
 - Timeline slider with elapsed time and duration.
 - Previous track, play/pause, and next track controls.
@@ -37,7 +39,7 @@ Click **☰** to open settings. **Background** controls panel color and opacity.
 
 Choose **English** or **Bahasa Indonesia** using the language selector. The selection is applied to the interface, tray menu, and exit dialog immediately and remembered between sessions. Song metadata and lyric content retain their original language.
 
-Use **Position** in settings to choose a horizontal anchor (Left, Middle, Right) and a vertical anchor (Top, Middle, Bottom). Enter padding in pixels from the selected edges. Padding is disabled for centered axes, and both padding inputs are hidden when both anchors are Middle. Positions are measured from the full primary screen edges to the visible lyric panel. Zero padding places the panel at the screen edge, including the taskbar area. To reset the position, use the restore position command in the tray menu.
+Use **Position** in settings to choose a horizontal anchor (Left, Middle, Right) and a vertical anchor (Top, Middle, Bottom). Enter padding in pixels from the selected edges. Padding is disabled for centered axes, and both padding inputs are hidden when both anchors are Middle. Positions are measured from the selected monitor’s full screen edges to the visible lyric panel. Zero padding places the panel at the screen edge, including the taskbar area. To reset the position, use the restore position command in the tray menu.
 
 | Control | Action |
 | --- | --- |
@@ -47,11 +49,14 @@ Use **Position** in settings to choose a horizontal anchor (Left, Middle, Right)
 | ⏮ / ⏭ | Request the previous or next Spotify track |
 | ▶ / ⏸ | Resume or pause Spotify |
 | Timeline slider | Request a new playback position when released |
+| Ctrl + Alt + H | Hide or show the overlay without stopping synchronization |
 | Ctrl + Alt + Q | Exit SingAlong immediately |
 
 Playback buttons and seeking depend on the controls Spotify exposes to Windows. Game Mode locks playback interaction so clicks pass through to the game. Hover fading remains available.
 
 Game Mode ends when focus returns to a regular window. Other fullscreen apps can also trigger it.
+
+Choose a display from the **Monitor** dropdown. If it is disconnected, the overlay returns to the primary monitor. **Size** controls lyric font size (18–48 px) and panel width using sliders or numeric inputs. The next line uses 75% of the main font size. Height adapts to content while preserving the anchor; **Reset sizes** restores defaults. The tray menu also provides Hide/Show if the hotkey is unavailable.
 
 ## Closing settings and exiting
 
@@ -140,6 +145,10 @@ The local lyric font is loaded from `font/Spotify-Font.ttf`. The supplied file i
 ## Changelog
 
 ### Unreleased
+
+- Monitor selection with fallback to the primary display.
+- Ctrl + Alt + H and tray actions to hide/show the overlay.
+- Font size and panel width controls, automatic height, and size reset.
 
 ### 0.3.1 — November 18, 2026
 

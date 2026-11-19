@@ -44,6 +44,7 @@ function getLyricPair(lines, position) {
   return {
     current: lines[current]?.lyric ?? '',
     next: lines.slice(current + 1).find((line) => line.lyric)?.lyric ?? '',
+    instrumental: lines.length > 0 && !(lines[current]?.lyric),
   };
 }
 

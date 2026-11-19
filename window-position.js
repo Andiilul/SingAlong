@@ -23,4 +23,18 @@ function moveWindow(window, x, y) {
   }
 }
 
-module.exports = { moveWindow };
+function resizeWindow(window, width, height) {
+  if (!setWindowPos) {
+    window.setSize(width, height);
+    return;
+  }
+  const handle = window.getNativeWindowHandle();
+  const hwnd = handle.length === 8 ? handle.readBigUInt64LE() : BigInt(handle.readUInt32LE());
+  const rect = screen.dipToScreenRect(window, { ...window.getBounds(), width, height });
+  // SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE: intentional resize only.
+  if (!setWindowPos(hwnd, null, 0, 0, rect.width, rect.height, 0x0002 | 0x0004 | 0x0010)) {
+    throw new Error('Windows could not resize the overlay.');
+  }
+}
+
+module.exports = { moveWindow, resizeWindow };

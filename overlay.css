@@ -215,13 +215,13 @@ p {
 }
 
 .current {
-  font-size: 26px;
+  font-size: var(--lyric-font-size, 26px);
   font-weight: 700;
 }
 
 .next {
   color: var(--lyrics-next-color, #c5c2d3);
-  font-size: 19px;
+  font-size: calc(var(--lyric-font-size, 26px) * 0.75);
 }
 
 .current,
@@ -237,4 +237,16 @@ p {
 
 .current {
   color: var(--lyrics-color, #ffffff);
+}
+
+.instrumental svg {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

@@ -137,7 +137,7 @@ ipcRenderer.on('lyrics-hover', (_event, hovered) => {
   document.body.classList.toggle('lyrics-hovered', hovered);
 });
 
-ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor, language, translations: messages }) => {
+ipcRenderer.on('overlay-state', (_event, { gameMode, fontSize, backgroundOpacity, textOpacity, textColor, reduceOpacityOnHover, backgroundColor, language, translations: messages }) => {
   translations = messages;
   document.documentElement.lang = language;
   document.querySelector('#game-notice strong').textContent = t('gameMode');
@@ -151,6 +151,7 @@ ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpac
   showMessage(messageKey);
   const alpha = (value) => Math.round(Math.max(0, Math.min(100, value)) / 100 * 255).toString(16).padStart(2, '0');
   const style = document.documentElement.style;
+  style.setProperty('--lyric-font-size', `${fontSize}px`);
   style.setProperty('--overlay-background', `${backgroundColor}${alpha(backgroundOpacity)}`);
   style.setProperty('--lyrics-color', `${textColor}${alpha(textOpacity)}`);
   style.setProperty('--lyrics-next-color', `${textColor}${alpha(textOpacity * 0.72)}`);
@@ -170,17 +171,29 @@ ipcRenderer.on('overlay-state', (_event, { gameMode, backgroundOpacity, textOpac
   }
 });
 
-ipcRenderer.on('lyrics', (_event, { status, current, next, position = 0, duration = 0, canSeek: seekable, trackKey, playing, controls = {} }) => {
+ipcRenderer.on('lyrics', (_event, { status, current, next, instrumental = false, position = 0, duration = 0, canSeek: seekable, trackKey, playing, controls = {} }) => {
   playbackPlaying = Boolean(playing);
   playbackControls = controls;
   updatePlaybackButtons();
   document.querySelector('.status').textContent = status;
   for (const [selector, text] of [['.current', current], ['.next', next]]) {
     const element = document.querySelector(selector);
-    if (element.textContent === text) continue;
+    const showNote = selector === '.current' && instrumental;
+    if (element.textContent === text && element.classList.contains('instrumental') === showNote) continue;
     for (const animation of element.getAnimations()) animation.cancel();
     element.textContent = text;
-    if (text && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    element.classList.toggle('instrumental', showNote);
+    if (showNote) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('aria-label', '♪');
+      svg.setAttribute('role', 'img');
+      const path = document.createElementNS(svg.namespaceURI, 'path');
+      path.setAttribute('d', 'M9 18V5l12-2v13M9 9l12-2M9 18c0 1.66-1.79 3-4 3s-4-1.34-4-3 1.79-3 4-3 4 1.34 4 3Zm12-2c0 1.66-1.79 3-4 3s-4-1.34-4-3 1.79-3 4-3 4 1.34 4 3Z');
+      svg.append(path);
+      element.append(svg);
+    }
+    if ((text || showNote) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       element.animate([
         { opacity: 0, transform: 'translateY(7px)' },
         { opacity: 1, transform: 'translateY(0)' },
